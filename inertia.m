@@ -3,9 +3,9 @@ clear; clc;
 
 %% Center of Mass
 % Bus
-m_prism = 1.284;
-CoM_prism = [0 0 1.0019];
-m_AV = 93.726;
+m_prism = 4.7578;
+CoM_prism = [0 0 0.9945];
+m_AV = 90.254;
 CoM_AV = [0 0 0.204];
 m_solar = 6*6.96;
 CoM_solar =  [0 0 0.01];
@@ -56,14 +56,6 @@ Izz_inner_prism = 2*rho_prism * h_inner_prism * I_y_inner_prism;
 % m_prism_hollow = (crosssec_prism - crosssec_inner_prism) * h_prism * rho_AV;
 I_prism = diag([Ixx_prism, Ixx_prism, Izz_prism]) - diag([Ixx_inner_prism, Ixx_inner_prism, Izz_inner_prism]);
 
-%top
-% h_top = 0.002;
-% m_top = crosssec_prism * h_top * rho_AV;
-% Ixx_top = rho_AV * (h_AV * I_y_prism + crosssec_prism * h_top^3/12);
-% Izz_top = 2*rho_AV * h_top * I_y_prism;
-% I_top = diag([Ixx_top, Ixx_top, Izz_top]);
-% 
-% CoM_top = [0 0 1.602]
 
 %solar
 I_solar = 1/12*m_solar/6 * diag([(0.5774^2 + 0.01^2), (1.1965^2 + 0.01^2), (0.5774^2 + 1.1965^2)]);
@@ -97,7 +89,6 @@ masses = [m_prism m_AV m_beam1 m_beam2 m_beam3 m_I1 m_I2 m_I3 m_I4];
 % sum all of them up (except solar) with respect to CAD axes
 I_tot = zeros(3,3);
 for i = 1:length(masses)
-    disp(i)
     inertia_i = inertias(:, 3*(i-1)+1:3*(i-1)+3);
     CoM_i = - CoMs(i, :);
     I_tot = I_tot + inertia_i + masses(i)*(dot(CoM_i, CoM_i)*eye(3) - CoM_i' * CoM_i); %with respect to CAD
@@ -119,6 +110,5 @@ end
 I_tot = I_tot + I_tot_solar;
 
 %transform to body axes
-CoM = - CoM;
-I_tot_body = I_tot + (m_bus + m_payload) * (dot(CoM, CoM)* eye(3) - CoM' * CoM);
+I_tot_body = I_tot - (m_bus + m_payload) * (dot(CoM, CoM)* eye(3) - CoM' * CoM);
 
