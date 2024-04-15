@@ -1,12 +1,16 @@
+%% Orbit Propagator
+%  Anna Sulzer & Ethan Anzia
+%  AA279C PSET2
+%%
 clear; clc;
 % Initial conditions
 mu = 398600.435436; %Earth centered orbit
 rE = 6378;
 
-om = 147.6784;%deg
-Om = 83.6444;%deg
-i = 39.9931; %deg
-%n = 14.94448617152684* 2*pi/86400; % mean motion in rad per sec
+om = 337.7127;%deg
+Om = 11.4426;%deg
+i = 39.9975; %deg
+%n = 14.80808427* 2*pi/86400; % mean motion in rad per sec
 %r = (mu/(n^2))^(1/3);
 
 %Perifocal
@@ -21,7 +25,7 @@ T_orbit = 2*pi*sqrt(r^3/mu);
 
 %Orbit Propagator ode113
 options = odeset('RelTol', 1e-3, 'AbsTol', 1e-6);
-tstart = 0; tint = 0.01; tend = 10*T_orbit;
+tstart = 0; tint = 0.01; tend = 1*T_orbit;
 [t_out, state_out] = ode113(@state_dot,[tstart:tint:tend]', state_ECI_init, options);
 
 %% Plot
@@ -31,7 +35,7 @@ plot3(state_out(:, 1), state_out(:, 2), state_out(:, 3), 'red', 'LineWidth',2)
 %Earth
 opts.FaceAlpha = 0.6;
 opts.Units = 'km';
-opts.RotAngle = 90.1871; %figure out coordinate system of globe!!
+opts.RotAngle = -127.1871; %figure out coordinate system of globe!!
 opts.RefPlane = 'ecliptic';
 planet3D('Earth',opts);
 axis equal;
