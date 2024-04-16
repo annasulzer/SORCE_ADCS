@@ -31,7 +31,7 @@ xlabel('t [s]')
 ylabel('\omega_z [rad/s^2]')
 
 %% Ellipsoids
-inertia_p = diag([85.075, 110.796, 120.2515]); %inertia in principal axes
+[R_princ,inertia_p] = inertia(); %inertia in principal axes
 
 %energy ellipsoid
 T = 0.5* (omega_init(1)^2*inertia_p(1,1) + omega_init(2)^2*inertia_p(2,2) + omega_init(3)^2*inertia_p(3,3));
@@ -41,7 +41,7 @@ T = 0.5* (omega_init(1)^2*inertia_p(1,1) + omega_init(2)^2*inertia_p(2,2) + omeg
 L =  sqrt(omega_init(1)^2*inertia_p(1,1)^2 + omega_init(2)^2*inertia_p(2,2)^2 + omega_init(3)^2*inertia_p(3,3)^2);
 [x_momE, y_momE, z_momE] = ellipsoid(0,0,0, sqrt(L^2/inertia_p(1,1)^2), sqrt(L^2/inertia_p(2,2)^2), sqrt(L^2/inertia_p(3,3)^2)); %energy ellipsoid
 
-
+const = L^2/(2*T) %to check if real
 %% Validate Ellipsoid
 %Energy
 a = sqrt(2*T/inertia_p(1,1));
@@ -98,16 +98,23 @@ zlabel('\omega_z [1/s^2]')
 legend('Energy Ellipsoid', 'Momentum Ellipsoid', 'Polhode')
 view(3)
 
-% Side views
-figure();
+%% Side views
+%yz plane
+%Reference ellipse
+a = sqrt(const/(inertia_p(2,2) - inertia_p(1,1)) * inertia_p(2,2));
+b = ;
+
 subplot(2,2,1);
-plot(omega_out(:,1), omega_out(:,2))
+plot(omega_out(:,2), omega_out(:,3))% data
+hold on;
+ezplot(@(y,z)  * y^2 + (inertia_p(3,3) - inertia_p(1,1))*inertia_p(3,3) * z^2 - const, [-a, a, -b, b]); %analytical sol
 axis equal;
 grid on;
-xlabel('\omega_x [1/s^2]')
-ylabel('\omega_y [1/s^2]')
-legend('Polhode in XY-plane')
+xlabel('\omega_y [1/s^2]')
+ylabel('\omega_z [1/s^2]')
+legend('Polhode in YZ-plane')
 
+%xz plane
 subplot(2,2,2);
 plot(omega_out(:,1), omega_out(:,3))
 axis equal;
@@ -116,16 +123,18 @@ xlabel('\omega_x [1/s^2]')
 ylabel('\omega_z [1/s^2]')
 legend('Polhode in XZ-plane')
 
+%xy plane
+figure();
 subplot(2,2,3);
-plot(omega_out(:,2), omega_out(:,3))
+plot(omega_out(:,1), omega_out(:,2))
 axis equal;
 grid on;
-xlabel('\omega_y [1/s^2]')
-ylabel('\omega_z [1/s^2]')
-legend('Polhode in YZ-plane')
+xlabel('\omega_x [1/s^2]')
+ylabel('\omega_y [1/s^2]')
+legend('Polhode in XY-plane')
 %% return omega_dot (zero torque)
 function [omegadot] = omega_dot(t, omega)
-    inertia_p = diag([85.075, 110.796, 120.2515]);
+    [R_princ,inertia_p] = inertia();
     M = zeros(3,1); %no torques
     %Euler eqns in principal axes
     omegadot = [ 1/inertia_p(1,1) * (M(1) - (inertia_p(3,3) - inertia_p(2,2)) * omega(2)*omega(3));
