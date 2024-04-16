@@ -37,22 +37,50 @@ ylabel('\omega_z [rad/s^2]')
 T = 0.5* (omega_init(1)^2*inertia_p(1,1) + omega_init(2)^2*inertia_p(2,2) + omega_init(3)^2*inertia_p(3,3));
 [x_enE, y_enE, z_enE] = ellipsoid(0,0,0, sqrt(2*T/inertia_p(1,1)), sqrt(2*T/inertia_p(2,2)), sqrt(2*T/inertia_p(3,3))); %energy ellipsoid
 
+%Semi Major Axes
+aE = sqrt(2*T/inertia_p(1,1));
+bE = sqrt(2*T/inertia_p(2,2));
+cE = sqrt(2*T/inertia_p(3,3));
+
 %momentum ellipsoid
 L =  sqrt(omega_init(1)^2*inertia_p(1,1)^2 + omega_init(2)^2*inertia_p(2,2)^2 + omega_init(3)^2*inertia_p(3,3)^2);
 [x_momE, y_momE, z_momE] = ellipsoid(0,0,0, sqrt(L^2/inertia_p(1,1)^2), sqrt(L^2/inertia_p(2,2)^2), sqrt(L^2/inertia_p(3,3)^2)); %energy ellipsoid
 
-const = L^2/(2*T) %to check if real
-%% Validate Ellipsoid
+%Momentum
+aM = sqrt(L^2/inertia_p(1,1)^2);
+bM = sqrt(L^2/inertia_p(2,2)^2);
+cM = sqrt(L^2/inertia_p(3,3)^2);
+
+%Check that it's real
+disp(L^2/(2*T)); %to check if real
+
+
+% Analytical Solutions
+%yz plane
+%Reference ellipse
+a_yz = sqrt((L^2 -2*T*inertia_p(1,1))/(((inertia_p(2,2) - inertia_p(1,1)) * inertia_p(2,2))));
+b_yz = sqrt((L^2 -2*T*inertia_p(1,1))/(((inertia_p(3,3) - inertia_p(1,1)) * inertia_p(3,3))));
+
+%xz plane
+%Reference hyperbola
+a_xz = sqrt((L^2 -2*T*inertia_p(2,2))/(((inertia_p(1,1) - inertia_p(2,2)) * inertia_p(1,1))));
+b_xz = sqrt((L^2 -2*T*inertia_p(2,2))/(((inertia_p(3,3) - inertia_p(2,2)) * inertia_p(3,3))));
+
+%xy plane
+%Reference ellipse
+a_xy = sqrt((L^2 -2*T*inertia_p(3,3))/(((inertia_p(1,1) - inertia_p(3,3)) * inertia_p(1,1))));
+b_xy = sqrt((L^2 -2*T*inertia_p(3,3))/(((inertia_p(2,2) - inertia_p(3,3)) * inertia_p(2,2))));
+
+
+
+%% Plot & Validate Ellipsoid
 %Energy
-a = sqrt(2*T/inertia_p(1,1));
-b = sqrt(2*T/inertia_p(2,2));
-c = sqrt(2*T/inertia_p(3,3));
 figure()
 surface(x_enE, y_enE, z_enE, 'FaceColor', 'blue', 'EdgeColor', 'black', 'FaceAlpha',.2, 'EdgeAlpha',.4);
 hold on;
-plot3(linspace(0,a), 0, 0,'.', 'Color','black', 'LineWidth', 2)
-plot3(0,linspace(0,b), 0, '.', 'Color','black', 'LineWidth', 2)
-plot3(0, 0, linspace(0,c),'.', 'Color','black', 'LineWidth', 2)
+plot3(linspace(0,aE), 0, 0,'.', 'Color','black', 'LineWidth', 2)
+plot3(0,linspace(0,bE), 0, '.', 'Color','black', 'LineWidth', 2)
+plot3(0, 0, linspace(0,cE),'.', 'Color','black', 'LineWidth', 2)
 view(3)
 xlabel('\omega_x [1/s^2]')
 ylabel('\omega_y [1/s^2]')
@@ -63,15 +91,12 @@ title('Energy Ellipsoid with semi-major axes')
 hold off;
 
 %Momentum
-a = sqrt(L^2/inertia_p(1,1)^2);
-b = sqrt(L^2/inertia_p(2,2)^2);
-c = sqrt(L^2/inertia_p(3,3)^2);
 figure()
 surface(x_momE, y_momE, z_momE, 'FaceColor', 'red', 'EdgeColor', 'black', 'FaceAlpha',.2, 'EdgeAlpha',.4);
 hold on;
-plot3(linspace(0,a), 0, 0,'.', 'Color','black', 'LineWidth', 2)
-plot3(0,linspace(0,b), 0, '.', 'Color','black', 'LineWidth', 2)
-plot3(0, 0, linspace(0,c),'.', 'Color','black', 'LineWidth', 2)
+plot3(linspace(0,aM), 0, 0,'.', 'Color','black', 'LineWidth', 2)
+plot3(0,linspace(0,bM), 0, '.', 'Color','black', 'LineWidth', 2)
+plot3(0, 0, linspace(0,cM),'.', 'Color','black', 'LineWidth', 2)
 view(3)
 grid on;
 axis equal;
@@ -98,40 +123,49 @@ zlabel('\omega_z [1/s^2]')
 legend('Energy Ellipsoid', 'Momentum Ellipsoid', 'Polhode')
 view(3)
 
-%% Side views
+%% Plot Side views
 %yz plane
-%Reference ellipse
-a = sqrt(const/(inertia_p(2,2) - inertia_p(1,1)) * inertia_p(2,2));
-b = ;
-
+figure();
 subplot(2,2,1);
-plot(omega_out(:,2), omega_out(:,3))% data
 hold on;
-ezplot(@(y,z)  * y^2 + (inertia_p(3,3) - inertia_p(1,1))*inertia_p(3,3) * z^2 - const, [-a, a, -b, b]); %analytical sol
+plot(omega_out(:,2), omega_out(:,3), 'Color', 'red', 'LineWidth',2)% data
+fplot(@(y) sqrt(b_yz^2 * (1 - y^2 / a_yz^2)), '--','LineWidth',2, 'Color','blue'); % Upper half of ellipse
+fplot(@(y) -sqrt(b_yz^2 * (1 - y^2 / a_yz^2)), '--', 'LineWidth',2, 'Color','blue'); % Upper half of ellipse
 axis equal;
 grid on;
 xlabel('\omega_y [1/s^2]')
 ylabel('\omega_z [1/s^2]')
-legend('Polhode in YZ-plane')
+title('Polhode in YZ-plane')
 
 %xz plane
 subplot(2,2,2);
-plot(omega_out(:,1), omega_out(:,3))
+hold on;
+plot(omega_out(:,1), omega_out(:,3), 'Color', 'red', 'LineWidth',2)% data
+fplot(@(x) sqrt(b_xz^2 * (1 - x^2 / a_xz^2)),'--', 'LineWidth',2, 'Color','blue'); % Upper half of ellipse
+fplot(@(x) -sqrt(b_xz^2 * (1 - x^2 / a_xz^2)), '--','LineWidth',2, 'Color','blue'); % Upper half of ellipse
 axis equal;
 grid on;
+xlim([-0.1, 0.1]);
+ylim([-0.1, 0.1]);
 xlabel('\omega_x [1/s^2]')
 ylabel('\omega_z [1/s^2]')
-legend('Polhode in XZ-plane')
+title('Polhode in XZ-plane')
+hold off;
 
 %xy plane
-figure();
 subplot(2,2,3);
-plot(omega_out(:,1), omega_out(:,2))
+hold on;
+plot(omega_out(:,1), omega_out(:,2), 'Color', 'red', 'LineWidth',2)% data)
+fplot(@(x) sqrt(b_xy^2 * (1 - x^2 / a_xy^2)), '--','LineWidth',2, 'Color','blue'); % Upper half of ellipse
+fplot(@(x) -sqrt(b_xy^2 * (1 - x^2 / a_xy^2)),'--', 'LineWidth',2, 'Color','blue'); % Upper half of ellipse
 axis equal;
 grid on;
 xlabel('\omega_x [1/s^2]')
 ylabel('\omega_y [1/s^2]')
-legend('Polhode in XY-plane')
+legend('Simulation Data', 'Analytical Solution', '')
+title('Polhode in XY-plane')
+
+
 %% return omega_dot (zero torque)
 function [omegadot] = omega_dot(t, omega)
     [R_princ,inertia_p] = inertia();
