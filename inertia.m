@@ -112,3 +112,19 @@ I_tot = I_tot + I_tot_solar;
 %transform to body axes
 I_tot_body = I_tot - (m_bus + m_payload) * (dot(CoM, CoM)* eye(3) - CoM' * CoM);
 
+%% Principal Axes 
+
+[principal_directions,principal_I_tensor] = eig(I_tot_body)
+
+%principal_I_tensor = [principal_I_tensor(2,2),0,0;
+%                      0,principal_I_tensor(3,3),0;
+%                      0,0,principal_I_tensor(1,1)]
+
+%principal_directions = [principal_directions(:,2),principal_directions(:,3),principal_directions(:,1)]
+
+eul = (180/pi)*rotm2eul(principal_directions,'XYZ')
+
+
+
+
+

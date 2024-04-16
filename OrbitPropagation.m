@@ -21,12 +21,12 @@ T_orbit = 2*pi*sqrt(r^3/mu);
 
 %Orbit Propagator ode113
 options = odeset('RelTol', 1e-3, 'AbsTol', 1e-6);
-tstart = 0; tint = 0.01; tend = 10*T_orbit;
+tstart = 0; tint = 0.01; tend = T_orbit;
 [t_out, state_out] = ode113(@state_dot,[tstart:tint:tend]', state_ECI_init, options);
 
 %% Plot
 figure()
-plot3(state_out(:, 1), state_out(:, 2), state_out(:, 3), 'red', 'LineWidth',2)
+plot3(state_out(:, 1), state_out(:, 2), state_out(:, 3), 'red', 'LineWidth',3)
 
 %Earth
 opts.FaceAlpha = 0.6;
@@ -41,7 +41,7 @@ grid on;
 xlabel('x [km]')
 ylabel('y [km]')
 zlabel('z [km]')
-title('Orbit around a Earth')
+title('SORCE Orbit')
 hold off;
 
 %% return equations of motion
