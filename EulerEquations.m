@@ -2,14 +2,18 @@
 %  Anna Sulzer & Ethan Anzia
 %  AA279C PSET2
 %% 
-clear; clc;
+clear; clc; close all;
 
 %Initial conditions
-omega_init = [0.05; 0.05; 0.05];
-T = 2*pi/norm(omega_init);
+ omega_init = [0.1; 0.15; 0.08];
+% omega_init = [0.25; 0.001; 0.001];
+% omega_init = [0.001; 0.25; 0.001];
+% omega_init = [0.001; 0.001; 0.25];
+% omega_init = [0.3; 0.0; 0.0];
+time = 2*pi/norm(omega_init);
 %Integrate
 options = odeset('RelTol', 1e-3, 'AbsTol', 1e-6);
-tstart = 0; tint = 0.1; tend = 1*T/tint;
+tstart = 0; tint = 0.1; tend = 10*time/tint;
 [t_out, omega_out] = ode113(@omega_dot,[tstart:tint:tend]', omega_init, options);
 t_out = t_out * tint; %to make seconds
 
@@ -30,6 +34,7 @@ plot(t_out, omega_out(:, 3))
 xlabel('t [s]')
 ylabel('\omega_z [rad/s^2]')
 
+saveas(gcf, 'ang_vel.pdf');
 %% Ellipsoids
 [R_princ,inertia_p] = inertia(); %inertia in principal axes
 
@@ -58,8 +63,8 @@ disp(L^2/(2*T)); %to check if real
 % Analytical Solutions
 %yz plane
 %Reference ellipse
-a_yz = sqrt((L^2 -2*T*inertia_p(1,1))/(((inertia_p(2,2) - inertia_p(1,1)) * inertia_p(2,2))));
-b_yz = sqrt((L^2 -2*T*inertia_p(1,1))/(((inertia_p(3,3) - inertia_p(1,1)) * inertia_p(3,3))));
+a_yz = sqrt((L^2-2*T*inertia_p(1,1))/((inertia_p(2,2) - inertia_p(1,1))*inertia_p(2,2)));
+b_yz = sqrt((L^2-2*T*inertia_p(1,1))/((inertia_p(3,3) - inertia_p(1,1))*inertia_p(3,3)));
 
 %xz plane
 %Reference hyperbola
@@ -89,6 +94,7 @@ grid on;
 axis equal;
 title('Energy Ellipsoid with semi-major axes')
 hold off;
+saveas(gcf, 'EnEllipsoid.pdf');
 
 %Momentum
 figure()
@@ -104,7 +110,7 @@ xlabel('\omega_x [1/s^2]')
 ylabel('\omega_y [1/s^2]')
 zlabel('\omega_z [1/s^2]')
 title('Momentum Ellipsoid with semi-major axes')
-
+saveas(gcf, 'MomEllipsoid.pdf');
 %% Plot
 %Ellipsoid
 figure()
@@ -122,13 +128,13 @@ ylabel('\omega_y [1/s^2]')
 zlabel('\omega_z [1/s^2]')
 legend('Energy Ellipsoid', 'Momentum Ellipsoid', 'Polhode')
 view(3)
-
+saveas(gcf, 'Polhode.pdf');
 %% Plot Side views
 %yz plane
 figure();
 subplot(2,2,1);
 hold on;
-plot(omega_out(:,2), omega_out(:,3), 'Color', 'red', 'LineWidth',2)% data
+plot(omega_out(:,2), omega_out(:,3),'Color', 'red', 'LineWidth',2)% data
 fplot(@(y) sqrt(b_yz^2 * (1 - y^2 / a_yz^2)), '--','LineWidth',2, 'Color','blue'); % Upper half of ellipse
 fplot(@(y) -sqrt(b_yz^2 * (1 - y^2 / a_yz^2)), '--', 'LineWidth',2, 'Color','blue'); % Upper half of ellipse
 axis equal;
@@ -140,13 +146,13 @@ title('Polhode in YZ-plane')
 %xz plane
 subplot(2,2,2);
 hold on;
-plot(omega_out(:,1), omega_out(:,3), 'Color', 'red', 'LineWidth',2)% data
-fplot(@(x) sqrt(b_xz^2 * (1 - x^2 / a_xz^2)),'--', 'LineWidth',2, 'Color','blue'); % Upper half of ellipse
-fplot(@(x) -sqrt(b_xz^2 * (1 - x^2 / a_xz^2)), '--','LineWidth',2, 'Color','blue'); % Upper half of ellipse
+plot(omega_out(:,1), omega_out(:,3),'Color', 'red', 'LineWidth',2)% data
+fplot(@(x) sqrt(b_xz^2 * (1 - x^2 / a_xz^2)),'--', 'LineWidth',2, 'Color','blue'); % half of hyperbola
+fplot(@(x) -sqrt(b_xz^2 * (1 - x^2 / a_xz^2)), '--','LineWidth',2, 'Color','blue'); % half of hyperbola
 axis equal;
 grid on;
-xlim([-0.1, 0.1]);
-ylim([-0.1, 0.1]);
+xlim([-1.5*norm(max(omega_out)), 1.5*norm(max(omega_out))]);
+ylim([-1.5*norm(max(omega_out)), 1.5*norm(max(omega_out))]);
 xlabel('\omega_x [1/s^2]')
 ylabel('\omega_z [1/s^2]')
 title('Polhode in XZ-plane')
@@ -155,16 +161,17 @@ hold off;
 %xy plane
 subplot(2,2,3);
 hold on;
-plot(omega_out(:,1), omega_out(:,2), 'Color', 'red', 'LineWidth',2)% data)
+plot(omega_out(:,1), omega_out(:,2),'Color', 'red', 'LineWidth',2)% data)
 fplot(@(x) sqrt(b_xy^2 * (1 - x^2 / a_xy^2)), '--','LineWidth',2, 'Color','blue'); % Upper half of ellipse
 fplot(@(x) -sqrt(b_xy^2 * (1 - x^2 / a_xy^2)),'--', 'LineWidth',2, 'Color','blue'); % Upper half of ellipse
 axis equal;
 grid on;
 xlabel('\omega_x [1/s^2]')
 ylabel('\omega_y [1/s^2]')
-legend('Simulation Data', 'Analytical Solution', '')
 title('Polhode in XY-plane')
-
+hold off;
+legend('Simulation Data', 'Analytical Solution', '')
+saveas(gcf, 'Polhode2D.pdf');
 
 %% return omega_dot (zero torque)
 function [omegadot] = omega_dot(t, omega)
