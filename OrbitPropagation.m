@@ -16,7 +16,7 @@ a = (mu/(n^2))^(1/3);
 %Perifocal
 r = a*(1-e); %at periapsis
 v = sqrt(2*mu/r - mu/a); %circular orbit speed
-state_PQW_init = [r, 0, 0, 0, v, 0, 0]; %at periapsis
+state_PQW_init = [r, 0, 0, 0, v, 0]; %at periapsis
 
 %ECI
 R_PQW_IJK = rotz(Om)*rotx(i)*rotz(om); %rotation matrix from PQW to IJK, swapped sign bc active vs passive rotation

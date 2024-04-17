@@ -110,7 +110,7 @@ xlabel('\omega_x [1/s^2]')
 ylabel('\omega_y [1/s^2]')
 zlabel('\omega_z [1/s^2]')
 title('Momentum Ellipsoid with semi-major axes')
-saveas(gcf, 'MomEllipsoid.pdf');
+%saveas(gcf, 'MomEllipsoid.pdf');
 %% Plot
 %Ellipsoid
 figure()
@@ -128,7 +128,7 @@ ylabel('\omega_y [1/s^2]')
 zlabel('\omega_z [1/s^2]')
 legend('Energy Ellipsoid', 'Momentum Ellipsoid', 'Polhode')
 view(3)
-saveas(gcf, 'Polhode.pdf');
+%saveas(gcf, 'Polhode.pdf');
 %% Plot Side views
 %yz plane
 figure();
@@ -171,7 +171,7 @@ ylabel('\omega_y [1/s^2]')
 title('Polhode in XY-plane')
 hold off;
 legend('Simulation Data', 'Analytical Solution', '')
-saveas(gcf, 'Polhode2D.pdf');
+%saveas(gcf, 'Polhode2D.pdf');
 
 %% return omega_dot (zero torque)
 function [omegadot] = omega_dot(t, omega)
