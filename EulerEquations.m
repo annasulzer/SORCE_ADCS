@@ -5,8 +5,8 @@
 clear; clc; close all;
 
 %Initial conditions
- omega_init = [0.1; 0.15; 0.08];
-% omega_init = [0.25; 0.001; 0.001];
+% omega_init = [0.1; 0.15; 0.08];
+ omega_init = [0.25; 0.001; 0.001];
 % omega_init = [0.001; 0.25; 0.001];
 % omega_init = [0.001; 0.001; 0.25];
 % omega_init = [0.3; 0.0; 0.0];
@@ -146,7 +146,7 @@ title('Polhode in YZ-plane')
 %xz plane
 subplot(2,2,2);
 hold on;
-plot(omega_out(:,1), omega_out(:,3),'Color', 'red', 'LineWidth',2)% data
+plot(omega_out(:,1), omega_out(:,3),'x','Color', 'red', 'LineWidth',2)% data
 fplot(@(x) sqrt(b_xz^2 * (1 - x^2 / a_xz^2)),'--', 'LineWidth',2, 'Color','blue'); % half of hyperbola
 fplot(@(x) -sqrt(b_xz^2 * (1 - x^2 / a_xz^2)), '--','LineWidth',2, 'Color','blue'); % half of hyperbola
 axis equal;
@@ -161,7 +161,7 @@ hold off;
 %xy plane
 subplot(2,2,3);
 hold on;
-plot(omega_out(:,1), omega_out(:,2),'Color', 'red', 'LineWidth',2)% data)
+plot(omega_out(:,1), omega_out(:,2),'x','Color', 'red', 'LineWidth',2)% data)
 fplot(@(x) sqrt(b_xy^2 * (1 - x^2 / a_xy^2)), '--','LineWidth',2, 'Color','blue'); % Upper half of ellipse
 fplot(@(x) -sqrt(b_xy^2 * (1 - x^2 / a_xy^2)),'--', 'LineWidth',2, 'Color','blue'); % Upper half of ellipse
 axis equal;
