@@ -9,7 +9,7 @@ clear; clc; close all;
 % omega_init = [0.25; 0.001; 0.001];
 % omega_init = [0.001; 0.25; 0.001];
 % omega_init = [0.001; 0.001; 0.25];
-% omega_init = [0.3; 0.0; 0.0];
+
 time = 2*pi/norm(omega_init);
 %Integrate
 options = odeset('RelTol', 1e-3, 'AbsTol', 1e-6);
