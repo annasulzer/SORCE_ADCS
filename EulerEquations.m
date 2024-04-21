@@ -3,7 +3,7 @@
 %  AA279C PSET2
 %% 
 clear; clc; close all;
-
+%%
 %Initial conditions
  omega_init = [0.1; 0.15; 0.08];
 % omega_init = [0.25; 0.001; 0.001];
@@ -11,33 +11,34 @@ clear; clc; close all;
 % omega_init = [0.001; 0.001; 0.25];
 
 time = 2*pi/norm(omega_init);
+
 %Integrate
-options = odeset('RelTol', 1e-3, 'AbsTol', 1e-6);
-tstart = 0; tint = 0.1; tend = 10*time/tint;
+options = odeset('RelTol', 1e-6, 'AbsTol', 1e-10);
+tstart = 0; tint = 0.01; tend = 100*time;
 [t_out, omega_out] = ode113(@omega_dot,[tstart:tint:tend]', omega_init, options);
-t_out = t_out * tint; %to make seconds
+L_out = (inertia_p * omega_out')';
 
-
-% Plot
+% Plot over time
 figure()
 subplot(3,1,1)
 plot(t_out, omega_out(:, 1))
 xlabel('t [s]')
-ylabel('\omega_x [rad/s^2]')
+ylabel('\omega_x [rad/s]')
 title('Angular Velocity over time')
 subplot(3,1,2)
 plot(t_out, omega_out(:, 2))
 xlabel('t [s]')
-ylabel('\omega_y [rad/s^2]')
+ylabel('\omega_y [rad/s]')
 subplot(3,1,3)
 plot(t_out, omega_out(:, 3))
 xlabel('t [s]')
-ylabel('\omega_z [rad/s^2]')
+ylabel('\omega_z [rad/s]')
 
-saveas(gcf, 'ang_vel.pdf');
+
+%saveas(gcf, 'ang_vel.pdf');
 %% Ellipsoids
-[R_princ,inertia_p] = inertia(); %inertia in principal axes
-
+%[R_princ,inertia_p] = inertia(); %inertia in principal axes
+inertia_p = [85.075, 0, 0; 0, 85.075, 0; 0, 0, 120.2515];
 %energy ellipsoid
 T = 0.5* (omega_init(1)^2*inertia_p(1,1) + omega_init(2)^2*inertia_p(2,2) + omega_init(3)^2*inertia_p(3,3));
 [x_enE, y_enE, z_enE] = ellipsoid(0,0,0, sqrt(2*T/inertia_p(1,1)), sqrt(2*T/inertia_p(2,2)), sqrt(2*T/inertia_p(3,3))); %energy ellipsoid
@@ -60,7 +61,7 @@ cM = sqrt(L^2/inertia_p(3,3)^2);
 disp(L^2/(2*T)); %to check if real
 
 
-% Analytical Solutions
+% Analytical Solutions Ellipsoid
 %yz plane
 %Reference ellipse
 a_yz = sqrt((L^2-2*T*inertia_p(1,1))/((inertia_p(2,2) - inertia_p(1,1))*inertia_p(2,2)));
@@ -173,9 +174,125 @@ hold off;
 legend('Simulation Data', 'Analytical Solution', '')
 %saveas(gcf, 'Polhode2D.pdf');
 
+%% Analytical Solution for axially symmetric satellite
+%Angular Velocity
+omega_analyt=zeros(length(t_out), 3);
+lambda = omega_init(3)*(inertia_p(3,3) - inertia_p(1,1))/inertia_p(1,1);
+theta_zero = atan2(omega_init(2), omega_init(1));
+for i = 1:length(t_out)
+    omega_analyt(i, 3) = omega_init(3); %omega_z 
+    omega_analyt(i, 1) = norm(omega_init(1:2)) * cos(lambda*t_out(i) + theta_zero); %omega_x = om_xy * cos(lambda*t)
+    omega_analyt(i, 2) = norm(omega_init(1:2)) * sin(lambda*t_out(i) + theta_zero); %omega_x = om_xy * sin(lambda*t)
+end
+
+%Angular Momentum
+L_analyt=zeros(length(t_out), 3);
+L_analyt_init = inertia_p * omega_init;
+for i = 1:length(t_out)
+    L_analyt(i, 3) = L_analyt_init(3); %omega_z 
+    L_analyt(i, 1) = norm(L_analyt_init(1:2)) * cos(lambda*t_out(i) + theta_zero); %omega_x = om_xy * cos(lambda*t)
+    L_analyt(i, 2) = norm(L_analyt_init(1:2)) * sin(lambda*t_out(i) + theta_zero); %omega_x = om_xy * sin(lambda*t)
+end
+
+%% Plot
+%Ellipsoid
+figure()
+surface(x_enE, y_enE, z_enE, 'FaceColor', 'blue', 'EdgeColor', 'black', 'FaceAlpha',.2, 'EdgeAlpha',.4);
+hold on;
+surface(x_momE, y_momE, z_momE, 'FaceColor', 'red', 'EdgeColor', 'black', 'FaceAlpha',.2, 'EdgeAlpha',.4);
+
+%Polhode
+plot3(omega_out(:,1), omega_out(:,2), omega_out(:, 3), 'Color', 'black', 'LineWidth', 2)
+plot3(omega_analyt(:,1), omega_analyt(:,2), omega_analyt(:, 3), 'Color', 'green', 'LineWidth', 2)
+
+axis equal;
+grid on;
+xlabel('\omega_x [1/s^2]')
+ylabel('\omega_y [1/s^2]')
+zlabel('\omega_z [1/s^2]')
+legend('Energy Ellipsoid', 'Momentum Ellipsoid', 'Polhode Numerical', 'Polhode Analytical')
+view(3)
+title('Analytical vs Numerical Polhode for axial-symmetric satellite')
+
+%Errors btw analytical and numerical
+errors = omega_out - omega_analyt;
+
+%Plot Error over time
+figure()
+subplot(3,1,1)
+hold on;
+plot(t_out, errors(:, 1), 'red')
+xlabel('t [s]')
+ylabel('\Delta\omega_x [rad/s]')
+title('Errors between numerical solution and analytical solution over time')
+subplot(3,1,2)
+hold on;
+plot(t_out, errors(:, 2), 'red')
+xlabel('t [s]')
+ylabel('\Delta\omega_y [rad/s]')
+subplot(3,1,3)
+hold on;
+plot(t_out, errors(:, 3), 'red')
+xlabel('t [s]')
+ylabel('\Delta\omega_z [rad/s]')
+
+
+%Plot Ang Vel over time
+figure()
+subplot(3,1,1)
+hold on;
+plot(t_out, omega_out(:, 1), 'black')
+plot(t_out, omega_analyt(:, 1), '--','Color','green')
+xlabel('t [s]')
+ylabel('\omega_x [rad/s]')
+title('Numerical solution and analytical angular velocity over time')
+subplot(3,1,2)
+hold on;
+plot(t_out, omega_out(:, 2), 'black')
+plot(t_out, omega_analyt(:, 2), '--','Color','green')
+xlabel('t [s]')
+ylabel('\omega_y [rad/s]')
+subplot(3,1,3)
+hold on;
+plot(t_out, omega_out(:, 3), 'black')
+plot(t_out, omega_analyt(:, 3),'--', 'Color','green')
+xlabel('t [s]')
+ylabel('\omega_z [rad/s]')
+
+
+
+%Plot Angular Momentum
+figure()
+subplot(3,1,1)
+hold on;
+plot(t_out, L_out(:, 1), 'black')
+plot(t_out, L_analyt(:, 1),'--', 'Color','green')
+xlabel('t [s]')
+ylabel('L_x [kg*m^2/s]')
+title('Angular momentum vector of numerical solution and analytical solution over time')
+subplot(3,1,2)
+hold on;
+plot(t_out, L_out(:, 2), 'black')
+plot(t_out, L_analyt(:, 2), '--','Color','green')
+xlabel('t [s]')
+ylabel('L_y [kg*m^2/s]')
+subplot(3,1,3)
+hold on;
+
+plot(t_out, L_out(:, 3), 'black')
+plot(t_out, L_analyt(:, 3),'--', 'Color','green')
+xlabel('t [s]')
+ylabel('L_z [kg*m^2/s]')
+
+
+%% Kinematic Equation of motion
+
+
+
 %% return omega_dot (zero torque)
 function [omegadot] = omega_dot(t, omega)
-    [R_princ,inertia_p] = inertia();
+    %[R_princ,inertia_p] = inertia();
+    inertia_p = [85.075, 0, 0; 0, 85.075, 0; 0, 0, 120.2515];
     M = zeros(3,1); %no torques
     %Euler eqns in principal axes
     omegadot = [ 1/inertia_p(1,1) * (M(1) - (inertia_p(3,3) - inertia_p(2,2)) * omega(2)*omega(3));
