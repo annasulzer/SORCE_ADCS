@@ -10,6 +10,9 @@ clear; clc; close all;
 % omega_init = [0.001; 0.25; 0.001];
 % omega_init = [0.001; 0.001; 0.25];
 
+%[R_princ,inertia_p] = inertia(); %inertia in principal axes
+inertia_p = [85.075, 0, 0; 0, 85.075, 0; 0, 0, 120.2515];
+
 time = 2*pi/norm(omega_init);
 
 %Integrate
@@ -37,8 +40,7 @@ ylabel('\omega_z [rad/s]')
 
 %saveas(gcf, 'ang_vel.pdf');
 %% Ellipsoids
-%[R_princ,inertia_p] = inertia(); %inertia in principal axes
-inertia_p = [85.075, 0, 0; 0, 85.075, 0; 0, 0, 120.2515];
+
 %energy ellipsoid
 T = 0.5* (omega_init(1)^2*inertia_p(1,1) + omega_init(2)^2*inertia_p(2,2) + omega_init(3)^2*inertia_p(3,3));
 [x_enE, y_enE, z_enE] = ellipsoid(0,0,0, sqrt(2*T/inertia_p(1,1)), sqrt(2*T/inertia_p(2,2)), sqrt(2*T/inertia_p(3,3))); %energy ellipsoid
@@ -284,10 +286,52 @@ plot(t_out, L_analyt(:, 3),'--', 'Color','green')
 xlabel('t [s]')
 ylabel('L_z [kg*m^2/s]')
 
+%% Quaternions
+C = [0.892539, 0.157379, -0.422618;
+    -0.275451, 0.932257, -0.234570;
+    0.357073, 0.325773, 0.875426];
+beta_4sq = (0.25*(1+trace(C)));
+beta_1sq = (0.25*(1+2*C(1,1)- trace(C)));
+beta_2sq = (0.25*(1+2*C(2,2)- trace(C)));
+beta_3sq = (0.25*(1+2*C(3,3)- trace(C)));
+
+[maximum, max_ind] = max([beta_1sq, beta_2sq, beta_3sq, beta_4sq]);
+
+switch max_ind
+    case 1
+        beta_1 = sqrt(beta_1sq);
+        beta_4 = (C(2,3) - C(3,2))/(4*beta_1);
+        beta_3 = (C(3,1) + C(1,3))/(4*beta_1);
+        beta_2 = (C(1,2) + C(2,1))/(4*beta_1);
+    case 2
+        beta_2 = sqrt(beta_2sq);
+        beta_4 = (C(3,1) - C(1,3))/(4*beta_2);
+        beta_3 = (C(2,3) + C(3,2))/(4*beta_2);
+        beta_1 = (C(1,2) + C(2,1))/(4*beta_2);
+    case 3
+        beta_3 = sqrt(beta_3sq);
+        beta_4 = (C(1,2) - C(2,1))/(4*beta_3);
+        beta_2 = (C(2,3) + C(3,2))/(4*beta_3);
+        beta_1 = (C(3,1) + C(1,3))/(4*beta_3);
+       
+    case 4
+        beta_4 = sqrt(beta_4sq);
+        beta_3 = (C(1,2) - C(2,1))/(4*beta_4);
+        beta_2 = (C(3,1) - C(1,3))/(4*beta_4);
+        beta_1 = (C(2,3) - C(3,2))/(4*beta_4);   
+end
+
+quaternions_init = [beta_4; beta_1; beta_2; beta_3];
+quaternions_init =  quaternions_init/ norm(quaternions_init); %normalize
 
 %% Kinematic Equation of motion
-
-
+function [quat_dot] = quaternions_dot(quaternion, omega)
+    Sigma = [0, omega(3), -omega(2), omega(1);
+            -omega(3), 0, omega(1), omega(2);
+            omega(2), -omega(1), 0, omega(3);
+            -omega(1), -omega(2), -omega(3), 0];
+    quat_dot = 0.5 * Sigma * quaternion;
+end
 
 %% return omega_dot (zero torque)
 function [omegadot] = omega_dot(t, omega)
