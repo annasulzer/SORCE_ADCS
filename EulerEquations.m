@@ -17,9 +17,16 @@ time = 2*pi/norm(omega_init);
 %Integrate Euler Equations
 options = odeset('RelTol', 1e-6, 'AbsTol', 1e-10);
 tstart = 0; tint = 0.01; tend = 100*time;
-[t_out, omega_out] = ode113(@omega_dot,[tstart:tint:tend]', omega_init, options);
-L_out = (inertia_p * omega_out')';
+%[t_out, omega_out] = ode113(@omega_dot,[tstart:tint:tend]', omega_init, options);
+%L_out = (inertia_p * omega_out')';
 
+% Quaternions
+DCM = [0.892539, 0.157379, -0.422618;
+     -0.275451, 0.932257, -0.234570;
+     0.357073, 0.325773, 0.875426];
+
+
+sim("main")
 
 %% Plotting
 % Plot over time
@@ -38,9 +45,7 @@ plot(t_out, omega_out(:, 3))
 xlabel('t [s]')
 ylabel('\omega_z [rad/s]')
 
-
 %saveas(gcf, 'ang_vel.pdf');
-
 
 %% Analytical Solution for axially symmetric satellite
 %Angular Velocity
