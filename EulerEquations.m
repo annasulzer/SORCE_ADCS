@@ -8,26 +8,27 @@ clear; clc; close all;
 %Initial conditions
  omega_init = [0.1; 0.15; 0.08];
 
-% [R_princ,inertia_p] = inertia(); %inertia in principal axes
-inertia_p = [85.075, 0, 0; 0, 85.075, 0; 0, 0, 120.2515]; %axial symmetric
-
-
-time = 2*pi/norm(omega_init);
-
-%Integrate Euler Equations
-options = odeset('RelTol', 1e-6, 'AbsTol', 1e-10);
-tstart = 0; tint = 0.01; tend = 100*time;
-%[t_out, omega_out] = ode113(@omega_dot,[tstart:tint:tend]', omega_init, options);
-%L_out = (inertia_p * omega_out')';
-
-% Quaternions
+ % Quaternions
 DCM = [0.892539, 0.157379, -0.422618;
      -0.275451, 0.932257, -0.234570;
      0.357073, 0.325773, 0.875426];
 
+%[R_princ,inertia_p] = inertia(); %inertia in principal axes
+inertia_p = [85.075, 0, 0; 0, 85.075, 0; 0, 0, 120.2515]; %axial symmetric
 
-sim("main")
+%Integration settings
+absTol= 1e-10;
+relTol = 1e-6;
+time = 2*pi/norm(omega_init);
+tstart = 0; tend = 100*time;
 
+
+%%
+out = sim("main");
+omega_out = out.omega.Data(:,:)';
+t_out = out.tout;
+L_out = (inertia_p * omega_out')';
+quat_out = out.quaternions.Data(:, :)';
 %% Plotting
 % Plot over time
 figure()
