@@ -29,7 +29,7 @@ DCM = R;
 absTol= 1e-10;
 relTol = 1e-6;
 time = 2*pi/norm(omega_init);
-tstart = 0; tend = 0.1*T_orbit;
+tstart = 0; tend = T_orbit;
 
 
 %% Simulate

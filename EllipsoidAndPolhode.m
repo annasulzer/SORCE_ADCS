@@ -24,7 +24,6 @@ cM = sqrt(L^2/inertia_p(3,3)^2);
 %Check that it's real
 disp(L^2/(2*T)); %to check if real
 
-
 % Analytical Solutions Ellipsoids (2D)
 %yz plane
 %Reference ellipse
