@@ -6,15 +6,22 @@
 clear; clc; close all;
 %%
 %Initial conditions
- omega_init = [0.1; 0.15; 0.08];
+omega_init = [0.1; 0.15; 0.08];
 
- % Quaternions
-DCM = [0.892539, 0.157379, -0.422618;
-     -0.275451, 0.932257, -0.234570;
-     0.357073, 0.325773, 0.875426];
+att_init = [10, 25, -15]; %3,2,1
+R = rotz(10)*roty(25)*rotx(-15);
 
-%[R_princ,inertia_p] = inertia(); %inertia in principal axes
-inertia_p = [85.075, 0, 0; 0, 85.075, 0; 0, 0, 120.2515]; %axial symmetric
+%body axes expressed in inertial frame
+x = R*[1,0,0]';
+y = R*[0,1,0]';
+z = R*[0,0,1]';
+
+
+% Quaternions
+DCM = [x, y, z]';
+
+[R_princ,inertia_p] = inertia(); %inertia in principal axes
+%inertia_p = [85.075, 0, 0; 0, 85.075, 0; 0, 0, 120.2515]; %axial symmetric
 
 %Integration settings
 absTol= 1e-10;
@@ -23,13 +30,17 @@ time = 2*pi/norm(omega_init);
 tstart = 0; tend = 10*time;
 
 
-%%
+%% Simulate
 out = sim("main");
 omega_out = out.omega.Data(:,:)';
 t_out = out.tout;
 L_out = (inertia_p * omega_out')';
 quat_out = out.quaternions.Data(:, :)';
 euler_out = out.euler.Data(:, :)';
+omega_inertial_euler_out =  out.omega_inertial_euler.Data(:, :)';
+omega_inertial_quat_out =  out.omega_inertial_quat.Data(:, :)';
+L_inertial_euler_out =  out.L_inertial_euler.Data(:, :)';
+L_inertial_quat_out =  out.L_inertial_quat.Data(:, :)';
 %% Plotting
 % Plot omega over time
 figure()
@@ -175,5 +186,48 @@ plot(t_out, rad2deg(euler_out(:, 3)), 'blue')
 xlabel('t [s]')
 ylabel('\psi [deg]')
 
+%% Check Attitude Representation
+% Plot over time
+figure()
+subplot(3,1,1)
+hold on;
+plot(t_out, omega_inertial_euler_out(:, 1), 'blue')
+plot(t_out, omega_inertial_quat_out(:, 1), '--', 'Color','red')
+xlabel('t [s]')
+ylabel('\omega_x [rad/s]')
+title('Inertial angular velocity over time from the euler angles (blue) and quaternions (red)')
+subplot(3,1,2)
+hold on;
+plot(t_out, omega_inertial_euler_out(:, 2), 'blue')
+plot(t_out, omega_inertial_quat_out(:, 2), '--', 'Color','red')
+xlabel('t [s]')
+ylabel('\omega_y [rad/s]')
+subplot(3,1,3)
+hold on;
+plot(t_out, omega_inertial_euler_out(:, 3), 'blue')
+plot(t_out, omega_inertial_quat_out(:, 3), '--', 'Color','red')
+xlabel('t [s]')
+ylabel('\omega_z [rad/s]')
 
+%% Angular Momentum Vector
+figure()
+subplot(3,1,1)
+hold on;
+plot(t_out, L_inertial_euler_out(:, 1), 'blue')
+plot(t_out, L_inertial_quat_out(:, 1), '--', 'Color','red')
+xlabel('t [s]')
+ylabel('L_x [kg*m^2/s]')
+title('Inertial angular momentum vector over time from the euler angles (blue) and quaternions (red)')
+subplot(3,1,2)
+hold on;
+plot(t_out, L_inertial_euler_out(:, 2), 'blue')
+plot(t_out, L_inertial_quat_out(:, 2), '--', 'Color','red')
+xlabel('t [s]')
+ylabel('L_y [kg*m^2/s]')
+subplot(3,1,3)
+hold on;
+plot(t_out, L_inertial_euler_out(:, 3), 'blue')
+plot(t_out, L_inertial_quat_out(:, 3), '--', 'Color','red')
+xlabel('t [s]')
+ylabel('L_z [kg*m^2/s]')
 
