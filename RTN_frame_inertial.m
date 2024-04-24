@@ -1,14 +1,14 @@
 function [R, T, N] = RTN_frame_inertial(state)
     n = length(state(:,1));
-    R = zeros(3, n);
-    T = zeros(3, n);
-    N = zeros(3, n);
-    for i = 1:T
-        R(i) = state(i, 1:3)/norm(state(i, 1:3));
-        N(i) = cross(state(i, 1:3),state(i, 1:3))/norm(cross(state(i, 1:3),state(i, 1:3)));
-        T(i) = cross(N, R)/norm(cross(N,R));
+    R = zeros(n, 3);
+    T = zeros(n, 3);
+    N = zeros(n, 3);
+    for i = 1:n
+        R(i, :) = state(i, 1:3)/norm(state(i, 1:3));
+        N(i, :) = cross(state(i, 1:3), state(i, 4:6))/norm(cross(state(i, 1:3),state(i, 4:6)));
+        T(i, :) = cross(N(i, :), R(i, :))/norm(cross(N(i, :), R(i, :)));
     end
-    R = R';
-    T = T';
-    N = N';
+    % R = R';
+    % T = T';
+    % N = N';
 end
