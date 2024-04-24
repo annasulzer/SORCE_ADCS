@@ -32,7 +32,7 @@ quiver3(161.35+0.19,0+60.08,169.65+1.29,vector_rot_x(1),vector_rot_x(2),vector_r
 legend('','','Y_{CAD}','Z_{CAD}','X_{CAD}','Y_{BODY}','Z_{BODY}','X_{BODY}','Z_{PRINCIPAL}','Y_{PRINCIPAL}(max)','X_{PRINCIPAL}(min)')
 
 %% Angular Momentum Over Time
-% Run EulerEquations 
+% Run EulerEquations First! 
 
 filename = 'SORCE_forSTL.STL';
 gm = importGeometry(filename);
@@ -81,10 +81,19 @@ for k = 1:5:length(t)
     end
 end
 
+%% Full Vector Orbit Visualization
+% Run Euler Equations First! 
 
+t = tstart:tint:tend;
 
-
-
+figure; hold on 
+title(sprintf('Two-Body Circular Orbit Around Earth\nTime: %0.2f sec', t(1)), 'Interpreter','latex','FontSize',16);
+xlabel('x','Interpreter','latex','FontSize',16)
+ylabel('y','Interpreter','latex','FontSize',16)
+zlabel('z','Interpreter','latex','FontSize',16)
+grid minor
+axis equal
+view(30,30)
 
 
 
