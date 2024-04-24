@@ -7,10 +7,10 @@ clear; clc; close all;
 %%
 %Initial conditions
 [state_ECI_init, T_orbit] = OrbitPropagation();
-omega_init = [0.0; 0.1; 0.0];
+omega_init = [0.08; 0.1; 0.0];
 
-att_init = [0, 90, 0]; %3,2,1
-R = rotz(-att_init(1))*roty(-att_init(2))*rotx(-att_init(3));
+att_init = [0, 90, 0]; %3,2,3
+R = rotz(-att_init(1))*rotx(-att_init(2))*rotz(-att_init(3));
 
 %body axes expressed in inertial frame
 x = R*[1,0,0]';
@@ -233,6 +233,3 @@ plot(t_out, L_inertial_quat_out(:, 3), '--', 'Color','red')
 xlabel('t [s]')
 ylabel('L_z [kg*m^2/s]')
 
-
-%%
-dcm = angle2dcm(0, pi/2, 0)
