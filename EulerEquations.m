@@ -29,6 +29,7 @@ omega_out = out.omega.Data(:,:)';
 t_out = out.tout;
 L_out = (inertia_p * omega_out')';
 quat_out = out.quaternions.Data(:, :)';
+euler_out = out.euler.Data(:, :)';
 %% Plotting
 % Plot over time
 figure()
