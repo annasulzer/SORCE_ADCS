@@ -20,7 +20,7 @@ inertia_p = [85.075, 0, 0; 0, 85.075, 0; 0, 0, 120.2515]; %axial symmetric
 absTol= 1e-10;
 relTol = 1e-6;
 time = 2*pi/norm(omega_init);
-tstart = 0; tend = 100*time;
+tstart = 0; tend = 10*time;
 
 
 %%
@@ -31,7 +31,7 @@ L_out = (inertia_p * omega_out')';
 quat_out = out.quaternions.Data(:, :)';
 euler_out = out.euler.Data(:, :)';
 %% Plotting
-% Plot over time
+% Plot omega over time
 figure()
 subplot(3,1,1)
 plot(t_out, omega_out(:, 1))
@@ -47,9 +47,7 @@ plot(t_out, omega_out(:, 3))
 xlabel('t [s]')
 ylabel('\omega_z [rad/s]')
 
-%saveas(gcf, 'ang_vel.pdf');
-
-%% Analytical Solution for axially symmetric satellite
+% Analytical Solution for axially symmetric satellite
 %Angular Velocity
 omega_analyt=zeros(length(t_out), 3);
 lambda = omega_init(3)*(inertia_p(3,3) - inertia_p(1,1))/inertia_p(1,1);
@@ -61,15 +59,6 @@ for i = 1:length(t_out)
 end
 %Errors btw analytical and numerical
 errors = omega_out - omega_analyt;
-
-%Angular Momentum
-L_analyt=zeros(length(t_out), 3);
-L_analyt_init = inertia_p * omega_init;
-for i = 1:length(t_out)
-    L_analyt(i, 3) = L_analyt_init(3); %omega_z 
-    L_analyt(i, 1) = norm(L_analyt_init(1:2)) * cos(lambda*t_out(i) + theta_zero); %omega_x = om_xy * cos(lambda*t)
-    L_analyt(i, 2) = norm(L_analyt_init(1:2)) * sin(lambda*t_out(i) + theta_zero); %omega_x = om_xy * sin(lambda*t)
-end
 
 % Plot over time
 figure()
@@ -106,6 +95,17 @@ plot(t_out, errors(:, 3), 'red')
 xlabel('t [s]')
 ylabel('\Delta\omega_z [rad/s]')
 
+%% Plotting Angular Momentum Vector
+% Analytical Solution for axially symmetric satellite
+%Angular Momentum
+L_analyt=zeros(length(t_out), 3);
+L_analyt_init = inertia_p * omega_init;
+for i = 1:length(t_out)
+    L_analyt(i, 3) = L_analyt_init(3); %omega_z 
+    L_analyt(i, 1) = norm(L_analyt_init(1:2)) * cos(lambda*t_out(i) + theta_zero); %omega_x = om_xy * cos(lambda*t)
+    L_analyt(i, 2) = norm(L_analyt_init(1:2)) * sin(lambda*t_out(i) + theta_zero); %omega_x = om_xy * sin(lambda*t)
+end
+
 
 %Plot Angular Momentum
 figure()
@@ -129,6 +129,51 @@ plot(t_out, L_out(:, 3), 'black')
 plot(t_out, L_analyt(:, 3),'--', 'Color','green')
 xlabel('t [s]')
 ylabel('L_z [kg*m^2/s]')
+
+%% Plot Attitude Representations
+
+% Quaternions
+figure()
+subplot(4,1,1)
+hold on;
+plot(t_out, quat_out(:, 4), 'blue')
+xlabel('t [s]')
+ylabel('q4')
+title('Quaternions over time')
+subplot(4,1,2)
+hold on;
+plot(t_out, quat_out(:, 1), 'blue')
+xlabel('t [s]')
+ylabel('q1')
+subplot(4,1,3)
+hold on;
+plot(t_out, quat_out(:, 2), 'blue')
+xlabel('t [s]')
+ylabel('q2')
+subplot(4,1,4)
+hold on;
+plot(t_out, quat_out(:, 3), 'blue')
+xlabel('t [s]')
+ylabel('q3')
+
+% Euler Angles
+figure()
+subplot(3,1,1)
+hold on;
+plot(t_out, rad2deg(euler_out(:, 1)), 'blue')
+xlabel('t [s]')
+ylabel('\phi [deg]')
+title('Euler angles over time')
+subplot(3,1,2)
+hold on;
+plot(t_out, rad2deg(euler_out(:, 2)), 'blue')
+xlabel('t [s]')
+ylabel('\theta [deg]')
+subplot(3,1,3)
+hold on;
+plot(t_out, rad2deg(euler_out(:, 3)), 'blue')
+xlabel('t [s]')
+ylabel('\psi [deg]')
 
 
 
