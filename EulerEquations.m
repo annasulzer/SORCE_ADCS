@@ -6,10 +6,11 @@
 clear; clc; close all;
 %%
 %Initial conditions
-omega_init = [0.1; 0.15; 0.08];
+[state_ECI_init, T_orbit] = OrbitPropagation();
+omega_init = [0.0; 0.1; 0.0];
 
-att_init = [10, 25, -15]; %3,2,1
-R = rotz(10)*roty(25)*rotx(-15);
+att_init = [0, 90, 0]; %3,2,1
+R = rotz(-att_init(1))*roty(-att_init(2))*rotx(-att_init(3));
 
 %body axes expressed in inertial frame
 x = R*[1,0,0]';
@@ -18,7 +19,7 @@ z = R*[0,0,1]';
 
 
 % Quaternions
-DCM = [x, y, z]';
+DCM = R;
 
 [R_princ,inertia_p] = inertia(); %inertia in principal axes
 %inertia_p = [85.075, 0, 0; 0, 85.075, 0; 0, 0, 120.2515]; %axial symmetric
@@ -27,7 +28,7 @@ DCM = [x, y, z]';
 absTol= 1e-10;
 relTol = 1e-6;
 time = 2*pi/norm(omega_init);
-tstart = 0; tend = 10*time;
+tstart = 0; tend = T_orbit;
 
 
 %% Simulate
@@ -41,6 +42,7 @@ omega_inertial_euler_out =  out.omega_inertial_euler.Data(:, :)';
 omega_inertial_quat_out =  out.omega_inertial_quat.Data(:, :)';
 L_inertial_euler_out =  out.L_inertial_euler.Data(:, :)';
 L_inertial_quat_out =  out.L_inertial_quat.Data(:, :)';
+
 %% Plotting
 % Plot omega over time
 figure()
@@ -231,3 +233,6 @@ plot(t_out, L_inertial_quat_out(:, 3), '--', 'Color','red')
 xlabel('t [s]')
 ylabel('L_z [kg*m^2/s]')
 
+
+%%
+dcm = angle2dcm(0, pi/2, 0)
