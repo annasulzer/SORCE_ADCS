@@ -3,7 +3,8 @@
 %  AA279C PSET2 and PSET3
 %  For Polhode and Ellipsoid Plotting run EllipsoidAndPolhode.m
 %% 
-clear; clc; close all;
+clear; clc; 
+close all;
 %%
 %Initial conditions
 [state_ECI_init, T_orbit] = OrbitPropagation();
@@ -28,11 +29,12 @@ DCM = R;
 absTol= 1e-10;
 relTol = 1e-6;
 time = 2*pi/norm(omega_init);
-tstart = 0; tend = T_orbit;
+tstart = 0; tend = 0.1*T_orbit;
 
 
 %% Simulate
 out = sim("main");
+%%
 omega_out = out.omega.Data(:,:)';
 t_out = out.tout;
 L_out = (inertia_p * omega_out')';
@@ -42,108 +44,110 @@ omega_inertial_euler_out =  out.omega_inertial_euler.Data(:, :)';
 omega_inertial_quat_out =  out.omega_inertial_quat.Data(:, :)';
 L_inertial_euler_out =  out.L_inertial_euler.Data(:, :)';
 L_inertial_quat_out =  out.L_inertial_quat.Data(:, :)';
-
-%% Plotting
+state_out = out.orbit_state.Data(:,:)';
+R_euler = out.R_Euler.Data(:,:,:);
+R_quat = out.R_Quat.Data(:,:);
+%% Plotting PS2
 % Plot omega over time
-figure()
-subplot(3,1,1)
-plot(t_out, omega_out(:, 1))
-xlabel('t [s]')
-ylabel('\omega_x [rad/s]')
-title('Angular Velocity over time from the numerical integration')
-subplot(3,1,2)
-plot(t_out, omega_out(:, 2))
-xlabel('t [s]')
-ylabel('\omega_y [rad/s]')
-subplot(3,1,3)
-plot(t_out, omega_out(:, 3))
-xlabel('t [s]')
-ylabel('\omega_z [rad/s]')
+% figure()
+% subplot(3,1,1)
+% plot(t_out, omega_out(:, 1))
+% xlabel('t [s]')
+% ylabel('\omega_x [rad/s]')
+% title('Angular Velocity over time from the numerical integration')
+% subplot(3,1,2)
+% plot(t_out, omega_out(:, 2))
+% xlabel('t [s]')
+% ylabel('\omega_y [rad/s]')
+% subplot(3,1,3)
+% plot(t_out, omega_out(:, 3))
+% xlabel('t [s]')
+% ylabel('\omega_z [rad/s]')
+% 
+% % Analytical Solution for axially symmetric satellite
+% %Angular Velocity
+% omega_analyt=zeros(length(t_out), 3);
+% lambda = omega_init(3)*(inertia_p(3,3) - inertia_p(1,1))/inertia_p(1,1);
+% theta_zero = atan2(omega_init(2), omega_init(1));
+% for i = 1:length(t_out)
+%     omega_analyt(i, 3) = omega_init(3); %omega_z 
+%     omega_analyt(i, 1) = norm(omega_init(1:2)) * cos(lambda*t_out(i) + theta_zero); %omega_x = om_xy * cos(lambda*t)
+%     omega_analyt(i, 2) = norm(omega_init(1:2)) * sin(lambda*t_out(i) + theta_zero); %omega_x = om_xy * sin(lambda*t)
+% end
+% %Errors btw analytical and numerical
+% errors = omega_out - omega_analyt;
+% 
+% % Plot over time
+% figure()
+% subplot(3,1,1)
+% plot(t_out, omega_analyt(:, 1))
+% xlabel('t [s]')
+% ylabel('\omega_x [rad/s]')
+% title('Angular Velocity over time from the analytical solution')
+% subplot(3,1,2)
+% plot(t_out, omega_analyt(:, 2))
+% xlabel('t [s]')
+% ylabel('\omega_y [rad/s]')
+% subplot(3,1,3)
+% plot(t_out, omega_analyt(:, 3))
+% xlabel('t [s]')
+% ylabel('\omega_z [rad/s]')
+% 
+% %Plot Error over time
+% figure()
+% subplot(3,1,1)
+% hold on;
+% plot(t_out, errors(:, 1), 'red')
+% xlabel('t [s]')
+% ylabel('\Delta\omega_x [rad/s]')
+% title('Errors between numerical solution and analytical solution over time')
+% subplot(3,1,2)
+% hold on;
+% plot(t_out, errors(:, 2), 'red')
+% xlabel('t [s]')
+% ylabel('\Delta\omega_y [rad/s]')
+% subplot(3,1,3)
+% hold on;
+% plot(t_out, errors(:, 3), 'red')
+% xlabel('t [s]')
+% ylabel('\Delta\omega_z [rad/s]')
+% 
+% %% Plotting Angular Momentum Vector
+% % Analytical Solution for axially symmetric satellite
+% %Angular Momentum
+% L_analyt=zeros(length(t_out), 3);
+% L_analyt_init = inertia_p * omega_init;
+% for i = 1:length(t_out)
+%     L_analyt(i, 3) = L_analyt_init(3); %omega_z 
+%     L_analyt(i, 1) = norm(L_analyt_init(1:2)) * cos(lambda*t_out(i) + theta_zero); %omega_x = om_xy * cos(lambda*t)
+%     L_analyt(i, 2) = norm(L_analyt_init(1:2)) * sin(lambda*t_out(i) + theta_zero); %omega_x = om_xy * sin(lambda*t)
+% end
+% 
+% 
+% %Plot Angular Momentum
+% figure()
+% subplot(3,1,1)
+% hold on;
+% plot(t_out, L_out(:, 1), 'black')
+% plot(t_out, L_analyt(:, 1),'--', 'Color','green')
+% xlabel('t [s]')
+% ylabel('L_x [kg*m^2/s]')
+% title('Angular momentum vector of numerical solution and analytical solution over time')
+% subplot(3,1,2)
+% hold on;
+% plot(t_out, L_out(:, 2), 'black')
+% plot(t_out, L_analyt(:, 2), '--','Color','green')
+% xlabel('t [s]')
+% ylabel('L_y [kg*m^2/s]')
+% subplot(3,1,3)
+% hold on;
+% 
+% plot(t_out, L_out(:, 3), 'black')
+% plot(t_out, L_analyt(:, 3),'--', 'Color','green')
+% xlabel('t [s]')
+% ylabel('L_z [kg*m^2/s]')
 
-% Analytical Solution for axially symmetric satellite
-%Angular Velocity
-omega_analyt=zeros(length(t_out), 3);
-lambda = omega_init(3)*(inertia_p(3,3) - inertia_p(1,1))/inertia_p(1,1);
-theta_zero = atan2(omega_init(2), omega_init(1));
-for i = 1:length(t_out)
-    omega_analyt(i, 3) = omega_init(3); %omega_z 
-    omega_analyt(i, 1) = norm(omega_init(1:2)) * cos(lambda*t_out(i) + theta_zero); %omega_x = om_xy * cos(lambda*t)
-    omega_analyt(i, 2) = norm(omega_init(1:2)) * sin(lambda*t_out(i) + theta_zero); %omega_x = om_xy * sin(lambda*t)
-end
-%Errors btw analytical and numerical
-errors = omega_out - omega_analyt;
-
-% Plot over time
-figure()
-subplot(3,1,1)
-plot(t_out, omega_analyt(:, 1))
-xlabel('t [s]')
-ylabel('\omega_x [rad/s]')
-title('Angular Velocity over time from the analytical solution')
-subplot(3,1,2)
-plot(t_out, omega_analyt(:, 2))
-xlabel('t [s]')
-ylabel('\omega_y [rad/s]')
-subplot(3,1,3)
-plot(t_out, omega_analyt(:, 3))
-xlabel('t [s]')
-ylabel('\omega_z [rad/s]')
-
-%Plot Error over time
-figure()
-subplot(3,1,1)
-hold on;
-plot(t_out, errors(:, 1), 'red')
-xlabel('t [s]')
-ylabel('\Delta\omega_x [rad/s]')
-title('Errors between numerical solution and analytical solution over time')
-subplot(3,1,2)
-hold on;
-plot(t_out, errors(:, 2), 'red')
-xlabel('t [s]')
-ylabel('\Delta\omega_y [rad/s]')
-subplot(3,1,3)
-hold on;
-plot(t_out, errors(:, 3), 'red')
-xlabel('t [s]')
-ylabel('\Delta\omega_z [rad/s]')
-
-%% Plotting Angular Momentum Vector
-% Analytical Solution for axially symmetric satellite
-%Angular Momentum
-L_analyt=zeros(length(t_out), 3);
-L_analyt_init = inertia_p * omega_init;
-for i = 1:length(t_out)
-    L_analyt(i, 3) = L_analyt_init(3); %omega_z 
-    L_analyt(i, 1) = norm(L_analyt_init(1:2)) * cos(lambda*t_out(i) + theta_zero); %omega_x = om_xy * cos(lambda*t)
-    L_analyt(i, 2) = norm(L_analyt_init(1:2)) * sin(lambda*t_out(i) + theta_zero); %omega_x = om_xy * sin(lambda*t)
-end
-
-
-%Plot Angular Momentum
-figure()
-subplot(3,1,1)
-hold on;
-plot(t_out, L_out(:, 1), 'black')
-plot(t_out, L_analyt(:, 1),'--', 'Color','green')
-xlabel('t [s]')
-ylabel('L_x [kg*m^2/s]')
-title('Angular momentum vector of numerical solution and analytical solution over time')
-subplot(3,1,2)
-hold on;
-plot(t_out, L_out(:, 2), 'black')
-plot(t_out, L_analyt(:, 2), '--','Color','green')
-xlabel('t [s]')
-ylabel('L_y [kg*m^2/s]')
-subplot(3,1,3)
-hold on;
-
-plot(t_out, L_out(:, 3), 'black')
-plot(t_out, L_analyt(:, 3),'--', 'Color','green')
-xlabel('t [s]')
-ylabel('L_z [kg*m^2/s]')
-
-%% Plot Attitude Representations
+%% Plot Attitude Representations PS3
 
 % Quaternions
 figure()
@@ -189,29 +193,8 @@ xlabel('t [s]')
 ylabel('\psi [deg]')
 
 %% Check Attitude Representation
-% Plot over time
-figure()
-subplot(3,1,1)
-hold on;
-plot(t_out, omega_inertial_euler_out(:, 1), 'blue')
-plot(t_out, omega_inertial_quat_out(:, 1), '--', 'Color','red')
-xlabel('t [s]')
-ylabel('\omega_x [rad/s]')
-title('Inertial angular velocity over time from the euler angles (blue) and quaternions (red)')
-subplot(3,1,2)
-hold on;
-plot(t_out, omega_inertial_euler_out(:, 2), 'blue')
-plot(t_out, omega_inertial_quat_out(:, 2), '--', 'Color','red')
-xlabel('t [s]')
-ylabel('\omega_y [rad/s]')
-subplot(3,1,3)
-hold on;
-plot(t_out, omega_inertial_euler_out(:, 3), 'blue')
-plot(t_out, omega_inertial_quat_out(:, 3), '--', 'Color','red')
-xlabel('t [s]')
-ylabel('\omega_z [rad/s]')
 
-%% Angular Momentum Vector
+% Angular Momentum Vector
 figure()
 subplot(3,1,1)
 hold on;
@@ -232,4 +215,60 @@ plot(t_out, L_inertial_euler_out(:, 3), 'blue')
 plot(t_out, L_inertial_quat_out(:, 3), '--', 'Color','red')
 xlabel('t [s]')
 ylabel('L_z [kg*m^2/s]')
+legend('Euler Angles', 'Quaternions')
 
+%%
+% Plot Omega over time
+figure()
+subplot(3,1,1)
+hold on;
+plot(t_out, omega_inertial_euler_out(:, 1), 'blue')
+plot(t_out, omega_inertial_quat_out(:, 1), '--', 'Color','red')
+xlabel('t [s]')
+ylabel('\omega_x [rad/s]')
+title('Inertial angular velocity over time from the euler angles (blue) and quaternions (red)')
+subplot(3,1,2)
+hold on;
+plot(t_out, omega_inertial_euler_out(:, 2), 'blue')
+plot(t_out, omega_inertial_quat_out(:, 2), '--', 'Color','red')
+xlabel('t [s]')
+ylabel('\omega_y [rad/s]')
+subplot(3,1,3)
+hold on;
+plot(t_out, omega_inertial_euler_out(:, 3), 'blue')
+plot(t_out, omega_inertial_quat_out(:, 3), '--', 'Color','red')
+xlabel('t [s]')
+ylabel('\omega_z [rad/s]')
+legend('Euler Angles', 'Quaternions')
+
+%Herpolhode Quaternions
+figure()
+hold on;
+plot3(omega_inertial_quat_out(:,1), omega_inertial_quat_out(:,2), omega_inertial_quat_out(:, 3), 'Color', 'black', 'LineWidth', 1)
+quiver3(0,0,0, L_inertial_quat_out(1,1)/50, L_inertial_quat_out(1,2)/50, L_inertial_quat_out(1,3)/50,'LineWidth', 1)
+axis equal;
+grid on;
+xlabel('x')
+ylabel('y')
+zlabel('z')
+legend('Herpolhode', 'Angular Momentum Vector (scaled)')
+title('Herpolhode and Angular Momentum Vector based on Quaternions')
+view(3)
+
+%Herpolhode Euler
+figure()
+hold on;
+plot3(omega_inertial_euler_out(:,1), omega_inertial_euler_out(:,2), omega_inertial_euler_out(:, 3), 'Color', 'black', 'LineWidth', 1)
+quiver3(0,0,0, L_inertial_euler_out(1,1)/50, L_inertial_euler_out(1,2)/50, L_inertial_euler_out(1,3)/50,'LineWidth', 1)
+axis equal;
+grid on;
+xlabel('x')
+ylabel('y')
+zlabel('z')
+legend('Herpolhode', 'Angular Momentum Vector (scaled)')
+title('Herpolhode and Angular Momentum Vector based on Euler Angles')
+view(3)
+
+%%
+%[Xp, Yp, Zp, Xb, Yb, Zb] = principal_frame_inertial(R_euler, R_princ) read
+%as Xp(:,:,t)
