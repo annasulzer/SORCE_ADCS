@@ -1,184 +1,277 @@
 %% Euler Equations
 %  Anna Sulzer & Ethan Anzia
-%  AA279C PSET2
+%  AA279C PSET2 and PSET3
+%  For Polhode and Ellipsoid Plotting run EllipsoidAndPolhode.m
 %% 
-clear; clc; close all;
-
+clear; clc; 
+close all;
+%%
 %Initial conditions
- omega_init = [0.1; 0.15; 0.08];
-% omega_init = [0.25; 0.001; 0.001];
-% omega_init = [0.001; 0.25; 0.001];
-% omega_init = [0.001; 0.001; 0.25];
+[state_ECI_init, T_orbit] = OrbitPropagation();
+omega_init = [0.08; 0.1; 0.0];
 
+att_init = [0, 90, 0]; %3,2,3
+R = rotz(-att_init(1))*rotx(-att_init(2))*rotz(-att_init(3));
+
+%body axes expressed in inertial frame
+x = R*[1,0,0]';
+y = R*[0,1,0]';
+z = R*[0,0,1]';
+
+
+% Quaternions
+DCM = R;
+
+[R_princ,inertia_p] = inertia(); %inertia in principal axes
+%inertia_p = [85.075, 0, 0; 0, 85.075, 0; 0, 0, 120.2515]; %axial symmetric
+
+%Integration settings
+absTol= 1e-10;
+relTol = 1e-6;
 time = 2*pi/norm(omega_init);
-%Integrate
-options = odeset('RelTol', 1e-3, 'AbsTol', 1e-6);
-tstart = 0; tint = 0.1; tend = 10*time/tint;
-[t_out, omega_out] = ode113(@omega_dot,[tstart:tint:tend]', omega_init, options);
-t_out = t_out * tint; %to make seconds
+tstart = 0; tend = T_orbit;
 
+%% Simulate
+out = sim("main");
+%% Read out simulation data
+%attitude propagation
+t_out = out.tout;
+omega_out = out.omega.Data(:,:)';
+L_out = (inertia_p * omega_out')';
 
-% Plot
+%attitude representation
+quat_out = out.quaternions.Data(:, :)';
+euler_out = out.euler.Data(:, :)';
+omega_inertial_euler_out =  out.omega_inertial_euler.Data(:, :)';
+omega_inertial_quat_out =  out.omega_inertial_quat.Data(:, :)';
+L_inertial_euler_out =  out.L_inertial_euler.Data(:, :)';
+L_inertial_quat_out =  out.L_inertial_quat.Data(:, :)';
+R_euler = out.R_Euler.Data(:,:,:);
+R_quat = out.R_Quat.Data(:,:);
+
+%orbit propagation
+state_out = out.orbit_state.Data(:,:)';
+%% Get different coordinate frames with respect to inertial frame
+[Xp, Yp, Zp, Xb, Yb, Zb] = principal_body_frame_inertial(Rot, R_princ);
+[R, T, N] = RTN_frame_inertial(state);
+
+%% Plotting PS2
+% Plot omega over time
+% figure()
+% subplot(3,1,1)
+% plot(t_out, omega_out(:, 1))
+% xlabel('t [s]')
+% ylabel('\omega_x [rad/s]')
+% title('Angular Velocity over time from the numerical integration')
+% subplot(3,1,2)
+% plot(t_out, omega_out(:, 2))
+% xlabel('t [s]')
+% ylabel('\omega_y [rad/s]')
+% subplot(3,1,3)
+% plot(t_out, omega_out(:, 3))
+% xlabel('t [s]')
+% ylabel('\omega_z [rad/s]')
+% 
+% % Analytical Solution for axially symmetric satellite
+% %Angular Velocity
+% omega_analyt=zeros(length(t_out), 3);
+% lambda = omega_init(3)*(inertia_p(3,3) - inertia_p(1,1))/inertia_p(1,1);
+% theta_zero = atan2(omega_init(2), omega_init(1));
+% for i = 1:length(t_out)
+%     omega_analyt(i, 3) = omega_init(3); %omega_z 
+%     omega_analyt(i, 1) = norm(omega_init(1:2)) * cos(lambda*t_out(i) + theta_zero); %omega_x = om_xy * cos(lambda*t)
+%     omega_analyt(i, 2) = norm(omega_init(1:2)) * sin(lambda*t_out(i) + theta_zero); %omega_x = om_xy * sin(lambda*t)
+% end
+% %Errors btw analytical and numerical
+% errors = omega_out - omega_analyt;
+% 
+% % Plot over time
+% figure()
+% subplot(3,1,1)
+% plot(t_out, omega_analyt(:, 1))
+% xlabel('t [s]')
+% ylabel('\omega_x [rad/s]')
+% title('Angular Velocity over time from the analytical solution')
+% subplot(3,1,2)
+% plot(t_out, omega_analyt(:, 2))
+% xlabel('t [s]')
+% ylabel('\omega_y [rad/s]')
+% subplot(3,1,3)
+% plot(t_out, omega_analyt(:, 3))
+% xlabel('t [s]')
+% ylabel('\omega_z [rad/s]')
+% 
+% %Plot Error over time
+% figure()
+% subplot(3,1,1)
+% hold on;
+% plot(t_out, errors(:, 1), 'red')
+% xlabel('t [s]')
+% ylabel('\Delta\omega_x [rad/s]')
+% title('Errors between numerical solution and analytical solution over time')
+% subplot(3,1,2)
+% hold on;
+% plot(t_out, errors(:, 2), 'red')
+% xlabel('t [s]')
+% ylabel('\Delta\omega_y [rad/s]')
+% subplot(3,1,3)
+% hold on;
+% plot(t_out, errors(:, 3), 'red')
+% xlabel('t [s]')
+% ylabel('\Delta\omega_z [rad/s]')
+% 
+% %% Plotting Angular Momentum Vector
+% % Analytical Solution for axially symmetric satellite
+% %Angular Momentum
+% L_analyt=zeros(length(t_out), 3);
+% L_analyt_init = inertia_p * omega_init;
+% for i = 1:length(t_out)
+%     L_analyt(i, 3) = L_analyt_init(3); %omega_z 
+%     L_analyt(i, 1) = norm(L_analyt_init(1:2)) * cos(lambda*t_out(i) + theta_zero); %omega_x = om_xy * cos(lambda*t)
+%     L_analyt(i, 2) = norm(L_analyt_init(1:2)) * sin(lambda*t_out(i) + theta_zero); %omega_x = om_xy * sin(lambda*t)
+% end
+% 
+% 
+% %Plot Angular Momentum
+% figure()
+% subplot(3,1,1)
+% hold on;
+% plot(t_out, L_out(:, 1), 'black')
+% plot(t_out, L_analyt(:, 1),'--', 'Color','green')
+% xlabel('t [s]')
+% ylabel('L_x [kg*m^2/s]')
+% title('Angular momentum vector of numerical solution and analytical solution over time')
+% subplot(3,1,2)
+% hold on;
+% plot(t_out, L_out(:, 2), 'black')
+% plot(t_out, L_analyt(:, 2), '--','Color','green')
+% xlabel('t [s]')
+% ylabel('L_y [kg*m^2/s]')
+% subplot(3,1,3)
+% hold on;
+% 
+% plot(t_out, L_out(:, 3), 'black')
+% plot(t_out, L_analyt(:, 3),'--', 'Color','green')
+% xlabel('t [s]')
+% ylabel('L_z [kg*m^2/s]')
+
+%% Plot Attitude Representations PS3
+% Quaternions over time
+figure()
+subplot(4,1,1)
+hold on;
+plot(t_out, quat_out(:, 4), 'blue')
+xlabel('t [s]')
+ylabel('q4')
+title('Quaternions over time')
+subplot(4,1,2)
+hold on;
+plot(t_out, quat_out(:, 1), 'blue')
+xlabel('t [s]')
+ylabel('q1')
+subplot(4,1,3)
+hold on;
+plot(t_out, quat_out(:, 2), 'blue')
+xlabel('t [s]')
+ylabel('q2')
+subplot(4,1,4)
+hold on;
+plot(t_out, quat_out(:, 3), 'blue')
+xlabel('t [s]')
+ylabel('q3')
+
+% Euler Angles over time
 figure()
 subplot(3,1,1)
-plot(t_out, omega_out(:, 1))
+hold on;
+plot(t_out, rad2deg(euler_out(:, 1)), 'blue')
 xlabel('t [s]')
-ylabel('\omega_x [rad/s^2]')
-title('Angular Velocity over time')
+ylabel('\phi [deg]')
+title('Euler angles over time')
 subplot(3,1,2)
-plot(t_out, omega_out(:, 2))
+hold on;
+plot(t_out, rad2deg(euler_out(:, 2)), 'blue')
 xlabel('t [s]')
-ylabel('\omega_y [rad/s^2]')
+ylabel('\theta [deg]')
 subplot(3,1,3)
-plot(t_out, omega_out(:, 3))
+hold on;
+plot(t_out, rad2deg(euler_out(:, 3)), 'blue')
 xlabel('t [s]')
-ylabel('\omega_z [rad/s^2]')
+ylabel('\psi [deg]')
 
-saveas(gcf, 'ang_vel.pdf');
-%% Ellipsoids
-[R_princ,inertia_p] = inertia(); %inertia in principal axes
-
-%energy ellipsoid
-T = 0.5* (omega_init(1)^2*inertia_p(1,1) + omega_init(2)^2*inertia_p(2,2) + omega_init(3)^2*inertia_p(3,3));
-[x_enE, y_enE, z_enE] = ellipsoid(0,0,0, sqrt(2*T/inertia_p(1,1)), sqrt(2*T/inertia_p(2,2)), sqrt(2*T/inertia_p(3,3))); %energy ellipsoid
-
-%Semi Major Axes
-aE = sqrt(2*T/inertia_p(1,1));
-bE = sqrt(2*T/inertia_p(2,2));
-cE = sqrt(2*T/inertia_p(3,3));
-
-%momentum ellipsoid
-L =  sqrt(omega_init(1)^2*inertia_p(1,1)^2 + omega_init(2)^2*inertia_p(2,2)^2 + omega_init(3)^2*inertia_p(3,3)^2);
-[x_momE, y_momE, z_momE] = ellipsoid(0,0,0, sqrt(L^2/inertia_p(1,1)^2), sqrt(L^2/inertia_p(2,2)^2), sqrt(L^2/inertia_p(3,3)^2)); %energy ellipsoid
-
-%Momentum
-aM = sqrt(L^2/inertia_p(1,1)^2);
-bM = sqrt(L^2/inertia_p(2,2)^2);
-cM = sqrt(L^2/inertia_p(3,3)^2);
-
-%Check that it's real
-disp(L^2/(2*T)); %to check if real
-
-
-% Analytical Solutions
-%yz plane
-%Reference ellipse
-a_yz = sqrt((L^2-2*T*inertia_p(1,1))/((inertia_p(2,2) - inertia_p(1,1))*inertia_p(2,2)));
-b_yz = sqrt((L^2-2*T*inertia_p(1,1))/((inertia_p(3,3) - inertia_p(1,1))*inertia_p(3,3)));
-
-%xz plane
-%Reference hyperbola
-a_xz = sqrt((L^2 -2*T*inertia_p(2,2))/(((inertia_p(1,1) - inertia_p(2,2)) * inertia_p(1,1))));
-b_xz = sqrt((L^2 -2*T*inertia_p(2,2))/(((inertia_p(3,3) - inertia_p(2,2)) * inertia_p(3,3))));
-
-%xy plane
-%Reference ellipse
-a_xy = sqrt((L^2 -2*T*inertia_p(3,3))/(((inertia_p(1,1) - inertia_p(3,3)) * inertia_p(1,1))));
-b_xy = sqrt((L^2 -2*T*inertia_p(3,3))/(((inertia_p(2,2) - inertia_p(3,3)) * inertia_p(2,2))));
-
-
-
-%% Plot & Validate Ellipsoid
-%Energy
+%% Check Attitude Representation
+% Angular Momentum Vector
 figure()
-surface(x_enE, y_enE, z_enE, 'FaceColor', 'blue', 'EdgeColor', 'black', 'FaceAlpha',.2, 'EdgeAlpha',.4);
+subplot(3,1,1)
 hold on;
-plot3(linspace(0,aE), 0, 0,'.', 'Color','black', 'LineWidth', 2)
-plot3(0,linspace(0,bE), 0, '.', 'Color','black', 'LineWidth', 2)
-plot3(0, 0, linspace(0,cE),'.', 'Color','black', 'LineWidth', 2)
-view(3)
-xlabel('\omega_x [1/s^2]')
-ylabel('\omega_y [1/s^2]')
-zlabel('\omega_z [1/s^2]')
-grid on;
-axis equal;
-title('Energy Ellipsoid with semi-major axes')
-hold off;
-saveas(gcf, 'EnEllipsoid.pdf');
+plot(t_out, L_inertial_euler_out(:, 1), 'blue')
+plot(t_out, L_inertial_quat_out(:, 1), '--', 'Color','red')
+xlabel('t [s]')
+ylabel('L_x [kg*m^2/s]')
+title('Inertial angular momentum vector over time from the euler angles (blue) and quaternions (red)')
+subplot(3,1,2)
+hold on;
+plot(t_out, L_inertial_euler_out(:, 2), 'blue')
+plot(t_out, L_inertial_quat_out(:, 2), '--', 'Color','red')
+xlabel('t [s]')
+ylabel('L_y [kg*m^2/s]')
+subplot(3,1,3)
+hold on;
+plot(t_out, L_inertial_euler_out(:, 3), 'blue')
+plot(t_out, L_inertial_quat_out(:, 3), '--', 'Color','red')
+xlabel('t [s]')
+ylabel('L_z [kg*m^2/s]')
+legend('Euler Angles', 'Quaternions')
 
-%Momentum
+%%
+% Plot Omega over time
 figure()
-surface(x_momE, y_momE, z_momE, 'FaceColor', 'red', 'EdgeColor', 'black', 'FaceAlpha',.2, 'EdgeAlpha',.4);
+subplot(3,1,1)
 hold on;
-plot3(linspace(0,aM), 0, 0,'.', 'Color','black', 'LineWidth', 2)
-plot3(0,linspace(0,bM), 0, '.', 'Color','black', 'LineWidth', 2)
-plot3(0, 0, linspace(0,cM),'.', 'Color','black', 'LineWidth', 2)
-view(3)
-grid on;
-axis equal;
-xlabel('\omega_x [1/s^2]')
-ylabel('\omega_y [1/s^2]')
-zlabel('\omega_z [1/s^2]')
-title('Momentum Ellipsoid with semi-major axes')
-%saveas(gcf, 'MomEllipsoid.pdf');
-%% Plot
-%Ellipsoid
+plot(t_out, omega_inertial_euler_out(:, 1), 'blue')
+plot(t_out, omega_inertial_quat_out(:, 1), '--', 'Color','red')
+xlabel('t [s]')
+ylabel('\omega_x [rad/s]')
+title('Inertial angular velocity over time from the euler angles (blue) and quaternions (red)')
+subplot(3,1,2)
+hold on;
+plot(t_out, omega_inertial_euler_out(:, 2), 'blue')
+plot(t_out, omega_inertial_quat_out(:, 2), '--', 'Color','red')
+xlabel('t [s]')
+ylabel('\omega_y [rad/s]')
+subplot(3,1,3)
+hold on;
+plot(t_out, omega_inertial_euler_out(:, 3), 'blue')
+plot(t_out, omega_inertial_quat_out(:, 3), '--', 'Color','red')
+xlabel('t [s]')
+ylabel('\omega_z [rad/s]')
+legend('Euler Angles', 'Quaternions')
+
+%Herpolhode Quaternions
 figure()
-surface(x_enE, y_enE, z_enE, 'FaceColor', 'blue', 'EdgeColor', 'black', 'FaceAlpha',.2, 'EdgeAlpha',.4);
 hold on;
-surface(x_momE, y_momE, z_momE, 'FaceColor', 'red', 'EdgeColor', 'black', 'FaceAlpha',.2, 'EdgeAlpha',.4);
-
-%Polhode
-plot3(omega_out(:,1), omega_out(:,2), omega_out(:, 3), 'Color', 'black', 'LineWidth', 2)
-
+plot3(omega_inertial_quat_out(:,1), omega_inertial_quat_out(:,2), omega_inertial_quat_out(:, 3), 'Color', 'black', 'LineWidth', 1)
+quiver3(0,0,0, L_inertial_quat_out(1,1)/50, L_inertial_quat_out(1,2)/50, L_inertial_quat_out(1,3)/50,'LineWidth', 1)
 axis equal;
 grid on;
-xlabel('\omega_x [1/s^2]')
-ylabel('\omega_y [1/s^2]')
-zlabel('\omega_z [1/s^2]')
-legend('Energy Ellipsoid', 'Momentum Ellipsoid', 'Polhode')
+xlabel('x')
+ylabel('y')
+zlabel('z')
+legend('Herpolhode', 'Angular Momentum Vector (scaled)')
+title('Herpolhode and Angular Momentum Vector based on Quaternions')
 view(3)
-%saveas(gcf, 'Polhode.pdf');
-%% Plot Side views
-%yz plane
-figure();
-subplot(2,2,1);
+
+%Herpolhode Euler
+figure()
 hold on;
-plot(omega_out(:,2), omega_out(:,3),'Color', 'red', 'LineWidth',2)% data
-fplot(@(y) sqrt(b_yz^2 * (1 - y^2 / a_yz^2)), '--','LineWidth',2, 'Color','blue'); % Upper half of ellipse
-fplot(@(y) -sqrt(b_yz^2 * (1 - y^2 / a_yz^2)), '--', 'LineWidth',2, 'Color','blue'); % Upper half of ellipse
+plot3(omega_inertial_euler_out(:,1), omega_inertial_euler_out(:,2), omega_inertial_euler_out(:, 3), 'Color', 'black', 'LineWidth', 1)
+quiver3(0,0,0, L_inertial_euler_out(1,1)/50, L_inertial_euler_out(1,2)/50, L_inertial_euler_out(1,3)/50,'LineWidth', 1)
 axis equal;
 grid on;
-xlabel('\omega_y [1/s^2]')
-ylabel('\omega_z [1/s^2]')
-title('Polhode in YZ-plane')
+xlabel('x')
+ylabel('y')
+zlabel('z')
+legend('Herpolhode', 'Angular Momentum Vector (scaled)')
+title('Herpolhode and Angular Momentum Vector based on Euler Angles')
+view(3)
 
-%xz plane
-subplot(2,2,2);
-hold on;
-plot(omega_out(:,1), omega_out(:,3),'Color', 'red', 'LineWidth',2)% data
-fplot(@(x) sqrt(b_xz^2 * (1 - x^2 / a_xz^2)),'--', 'LineWidth',2, 'Color','blue'); % half of hyperbola
-fplot(@(x) -sqrt(b_xz^2 * (1 - x^2 / a_xz^2)), '--','LineWidth',2, 'Color','blue'); % half of hyperbola
-axis equal;
-grid on;
-xlim([-1.5*norm(max(omega_out)), 1.5*norm(max(omega_out))]);
-ylim([-1.5*norm(max(omega_out)), 1.5*norm(max(omega_out))]);
-xlabel('\omega_x [1/s^2]')
-ylabel('\omega_z [1/s^2]')
-title('Polhode in XZ-plane')
-hold off;
-
-%xy plane
-subplot(2,2,3);
-hold on;
-plot(omega_out(:,1), omega_out(:,2),'Color', 'red', 'LineWidth',2)% data)
-fplot(@(x) sqrt(b_xy^2 * (1 - x^2 / a_xy^2)), '--','LineWidth',2, 'Color','blue'); % Upper half of ellipse
-fplot(@(x) -sqrt(b_xy^2 * (1 - x^2 / a_xy^2)),'--', 'LineWidth',2, 'Color','blue'); % Upper half of ellipse
-axis equal;
-grid on;
-xlabel('\omega_x [1/s^2]')
-ylabel('\omega_y [1/s^2]')
-title('Polhode in XY-plane')
-hold off;
-legend('Simulation Data', 'Analytical Solution', '')
-%saveas(gcf, 'Polhode2D.pdf');
-
-%% return omega_dot (zero torque)
-function [omegadot] = omega_dot(t, omega)
-    [R_princ,inertia_p] = inertia();
-    M = zeros(3,1); %no torques
-    %Euler eqns in principal axes
-    omegadot = [ 1/inertia_p(1,1) * (M(1) - (inertia_p(3,3) - inertia_p(2,2)) * omega(2)*omega(3));
-                 1/inertia_p(2,2) * (M(2) - (inertia_p(1,1) - inertia_p(3,3)) * omega(3)*omega(1));
-                 1/inertia_p(3,3) * (M(3) - (inertia_p(2,2) - inertia_p(1,1)) * omega(1)*omega(2))];
-end
