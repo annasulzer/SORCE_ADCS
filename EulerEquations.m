@@ -31,7 +31,6 @@ relTol = 1e-6;
 time = 2*pi/norm(omega_init);
 tstart = 0; tend = T_orbit;
 
-
 %% Simulate
 out = sim("main");
 %%
@@ -148,8 +147,7 @@ R_quat = out.R_Quat.Data(:,:);
 % ylabel('L_z [kg*m^2/s]')
 
 %% Plot Attitude Representations PS3
-
-% Quaternions
+% Quaternions over time
 figure()
 subplot(4,1,1)
 hold on;
@@ -173,7 +171,7 @@ plot(t_out, quat_out(:, 3), 'blue')
 xlabel('t [s]')
 ylabel('q3')
 
-% Euler Angles
+% Euler Angles over time
 figure()
 subplot(3,1,1)
 hold on;
@@ -193,7 +191,6 @@ xlabel('t [s]')
 ylabel('\psi [deg]')
 
 %% Check Attitude Representation
-
 % Angular Momentum Vector
 figure()
 subplot(3,1,1)
@@ -269,8 +266,3 @@ legend('Herpolhode', 'Angular Momentum Vector (scaled)')
 title('Herpolhode and Angular Momentum Vector based on Euler Angles')
 view(3)
 
-%%
-[Xp, Yp, Zp, Xb, Yb, Zb] = principal_frame_inertial(R_euler, R_princ) %read
-%as Xp(:,:,t)
-
-%[R, T, N] = RTN_frame_inertial(state_out)
