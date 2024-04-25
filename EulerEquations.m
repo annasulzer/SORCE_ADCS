@@ -270,5 +270,7 @@ title('Herpolhode and Angular Momentum Vector based on Euler Angles')
 view(3)
 
 %%
-%[Xp, Yp, Zp, Xb, Yb, Zb] = principal_frame_inertial(R_euler, R_princ) read
+[Xp, Yp, Zp, Xb, Yb, Zb] = principal_frame_inertial(R_euler, R_princ) %read
 %as Xp(:,:,t)
+
+%[R, T, N] = RTN_frame_inertial(state_out)
