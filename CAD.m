@@ -130,6 +130,7 @@ for k = 1:20:length(t_out)
     hold on
 
     % RTN 
+    
 
     % Principal
     princ_x = R_princ(:,:,k)*[1,0,0];
@@ -146,6 +147,8 @@ for k = 1:20:length(t_out)
     quiver3(x_position(k),y_position(k),z_position(k),body_x(1),body_x(2),body_x(3),LineWidth=2,ShowArrowHead='on',Color='blue')
     quiver3(x_position(k),y_position(k),z_position(k),body_y(1),body_y(2),body_y(3),LineWidth=2,ShowArrowHead='on',Color='red')
     quiver3(x_position(k),y_position(k),z_position(k),body_z(1),body_z(2),body_z(3),LineWidth=2,ShowArrowHead='on',Color='green')
+
+    legend('','','Orbit Path','','X_{principal}','Y_{principal}','Z_{principal}','X_{body}','Y_{body}','Z_{body}')
 
     % Updating the title
     title(sprintf('Two-Body Circular Orbit Around Earth\nTime: %0.2f sec', t_out(k)),...
