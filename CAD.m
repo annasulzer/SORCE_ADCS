@@ -32,7 +32,7 @@ quiver3(161.35+0.19,0+60.08,169.65+1.29,vector_rot_x(1),vector_rot_x(2),vector_r
 legend('','','Y_{CAD}','Z_{CAD}','X_{CAD}','Y_{BODY}','Z_{BODY}','X_{BODY}','Z_{PRINCIPAL}','Y_{PRINCIPAL}(max)','X_{PRINCIPAL}(min)')
 
 %% Angular Momentum Over Time
-% Run EulerEquations 
+% Run EulerEquations First
 
 filename = 'SORCE_forSTL.STL';
 gm = importGeometry(filename);
@@ -95,7 +95,7 @@ grid on;
 set(gcf,'position',[10,10,2000,800]);
 
 % Plot Earth
-opts.FaceAlpha = 0.2;
+opts.FaceAlpha = 0.3;
 opts.Units = 'km';
 opts.RotAngle = -127.1871; 
 opts.RefPlane = 'ecliptic';
@@ -111,11 +111,15 @@ z_position = state_out(:,3);
 filename = 'Orbit_Prop.gif';
 
 % Plotting the first iteration
+plot3(x_position,y_position,z_position,'Color','none');
+xlim([-7000,7000])
+ylim([-7000,7000])
+zlim([-7000,7000])
 p = plot3(x_position(1),y_position(1),z_position(1),'k','LineWidth',3);
 m = scatter3(x_position(1),y_position(1),z_position(1),'filled','k');
 
 % Iterating through the length of the time array
-for k = 1:20:length(t_out)
+for k = 1:5:length(t_out)
     % Updating the line
     p.XData = x_position(1:k);
     p.YData = y_position(1:k);
@@ -130,28 +134,28 @@ for k = 1:20:length(t_out)
     hold on
 
     % RTN 
+    quiver3(x_position(k),y_position(k),z_position(k),2000*R(k,1),2000*R(k,2),2000*R(k,3),LineWidth=3,ShowArrowHead='on',Color='#FFAC33')
+    quiver3(x_position(k),y_position(k),z_position(k),2000*T(k,1),2000*T(k,2),2000*T(k,3),LineWidth=3,ShowArrowHead='on',Color='red')
+    quiver3(x_position(k),y_position(k),z_position(k),2000*N(k,1),2000*N(k,2),2000*N(k,3),LineWidth=3,ShowArrowHead='on',Color='#6E23')
 
     % Principal
-    princ_x = R_princ(:,:,k)*[1,0,0];
-    princ_y = R_princ(:,:,k)*[0,1,0];
-    princ_z = R_princ(:,:,k)*[0,0,1];
-    quiver3(x_position(k),y_position(k),z_position(k),princ_x(1),princ_x(2),princ_x(3),LineWidth=2,ShowArrowHead='on',Color='magenta')
-    quiver3(x_position(k),y_position(k),z_position(k),princ_y(1),princ_y(2),princ_y(3),LineWidth=2,ShowArrowHead='on',Color='cyan')
-    quiver3(x_position(k),y_position(k),z_position(k),princ_z(1),princ_z(2),princ_z(3),LineWidth=2,ShowArrowHead='on',Color='yellow')
+    quiver3(x_position(k),y_position(k),z_position(k),2000*Xp(k,1),2000*Xp(k,2),2000*Xp(k,3),LineWidth=3,ShowArrowHead='on',Color='magenta')
+    quiver3(x_position(k),y_position(k),z_position(k),2000*Yp(k,1),2000*Yp(k,2),2000*Yp(k,3),LineWidth=3,ShowArrowHead='on',Color='cyan')
+    quiver3(x_position(k),y_position(k),z_position(k),2000*Zp(k,1),2000*Zp(k,2),2000*Zp(k,3),LineWidth=3,ShowArrowHead='on',Color='yellow')
 
     % Body
-    body_x = (principal_directions^1)*princ_x;
-    body_y = (principal_directions^1)*princ_y;
-    body_z = (principal_directions^1)*princ_z;
-    quiver3(x_position(k),y_position(k),z_position(k),body_x(1),body_x(2),body_x(3),LineWidth=2,ShowArrowHead='on',Color='blue')
-    quiver3(x_position(k),y_position(k),z_position(k),body_y(1),body_y(2),body_y(3),LineWidth=2,ShowArrowHead='on',Color='red')
-    quiver3(x_position(k),y_position(k),z_position(k),body_z(1),body_z(2),body_z(3),LineWidth=2,ShowArrowHead='on',Color='green')
+    quiver3(x_position(k),y_position(k),z_position(k),2000*Xb(k,1),2000*Xb(k,2),2000*Xb(k,3),LineWidth=3,ShowArrowHead='on',Color='blue')
+    quiver3(x_position(k),y_position(k),z_position(k),2000*Yb(k,1),2000*Yb(k,2),2000*Yb(k,3),LineWidth=3,ShowArrowHead='on',Color='red')
+    quiver3(x_position(k),y_position(k),z_position(k),2000*Zb(k,1),2000*Zb(k,2),2000*Zb(k,3),LineWidth=3,ShowArrowHead='on',Color='green')
+
+    % Legend
+    legend('','','Orbit Path','','R','T','N','X_{principal}','Y_{principal}','Z_{principal}','X_{body}','Y_{body}','Z_{body}')
 
     % Updating the title
-    title(sprintf('Two-Body Circular Orbit Around Earth\nTime: %0.2f sec', t_out(k)),...
+    title(sprintf('SORCE Orbit with RTN, Body, and Principal Axes\nTime: %0.2f sec', t_out(k)),...
     'Interpreter','Latex');
     % Delay
-    pause(0.000001)
+    pause(0.000000001)
     % Saving the figure
     frame = getframe(gcf);
     im = frame2im(frame);
