@@ -83,7 +83,6 @@ end
 
 %% Full Orbit Visualization
 % Run EulerEquations First! 
-
 % Create Figure
 figure; hold on 
 title(sprintf('Orbit Propagation with RTN, Body, and Principal Axes\nTime: %0.2f sec', t_out(1)), 'Interpreter','latex','FontSize',16);
@@ -136,7 +135,7 @@ for k = 1:5:length(t_out)
     % RTN 
     quiver3(x_position(k),y_position(k),z_position(k),2000*R(k,1),2000*R(k,2),2000*R(k,3),LineWidth=3,ShowArrowHead='on',Color='#FFAC33')
     quiver3(x_position(k),y_position(k),z_position(k),2000*T(k,1),2000*T(k,2),2000*T(k,3),LineWidth=3,ShowArrowHead='on',Color='red')
-    quiver3(x_position(k),y_position(k),z_position(k),2000*N(k,1),2000*N(k,2),2000*N(k,3),LineWidth=3,ShowArrowHead='on',Color='#6E23')
+    quiver3(x_position(k),y_position(k),z_position(k),2000*N(k,1),2000*N(k,2),2000*N(k,3),LineWidth=3,ShowArrowHead='on',Color='#7B3F00')
 
     % Principal
     quiver3(x_position(k),y_position(k),z_position(k),2000*Xp(k,1),2000*Xp(k,2),2000*Xp(k,3),LineWidth=3,ShowArrowHead='on',Color='magenta')
@@ -169,12 +168,12 @@ for k = 1:5:length(t_out)
     end
 end
 
-function [statedot] = state_dot(t, state)
-    mu = 398600.435436; %Earth centered orbit
-    statedot = zeros(6, 1);
-    statedot(1:3) = state(4:6);
-    statedot(4:6) = -mu * state(1:3)/(norm(state(1:3))^3);
-end
+% function [statedot] = state_dot(t, state)
+%     mu = 398600.435436; %Earth centered orbit
+%     statedot = zeros(6, 1);
+%     statedot(1:3) = state(4:6);
+%     statedot(4:6) = -mu * state(1:3)/(norm(state(1:3))^3);
+% end
 
 
 

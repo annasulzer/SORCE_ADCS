@@ -33,19 +33,28 @@ tstart = 0; tend = T_orbit;
 
 %% Simulate
 out = sim("main");
-%%
-omega_out = out.omega.Data(:,:)';
+%% Read out simulation data
+%attitude propagation
 t_out = out.tout;
+omega_out = out.omega.Data(:,:)';
 L_out = (inertia_p * omega_out')';
+
+%attitude representation
 quat_out = out.quaternions.Data(:, :)';
 euler_out = out.euler.Data(:, :)';
 omega_inertial_euler_out =  out.omega_inertial_euler.Data(:, :)';
 omega_inertial_quat_out =  out.omega_inertial_quat.Data(:, :)';
 L_inertial_euler_out =  out.L_inertial_euler.Data(:, :)';
 L_inertial_quat_out =  out.L_inertial_quat.Data(:, :)';
-state_out = out.orbit_state.Data(:,:)';
 R_euler = out.R_Euler.Data(:,:,:);
 R_quat = out.R_Quat.Data(:,:);
+
+%orbit propagation
+state_out = out.orbit_state.Data(:,:)';
+%% Get different coordinate frames with respect to inertial frame
+[Xp, Yp, Zp, Xb, Yb, Zb] = principal_body_frame_inertial(Rot, R_princ);
+[R, T, N] = RTN_frame_inertial(state);
+
 %% Plotting PS2
 % Plot omega over time
 % figure()
