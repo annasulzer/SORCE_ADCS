@@ -8,7 +8,7 @@ close all;
 %%
 %Initial conditions
 [state_ECI_init, T_orbit] = OrbitPropagation();
-omega_init = [0.08; 0.1; 0.0];
+omega_init = [0.1; 0.0; 0.0];
 
 att_init = [0, 90, 0]; %3,2,3
 R = rotz(-att_init(1))*rotx(-att_init(2))*rotz(-att_init(3));
@@ -29,7 +29,7 @@ DCM = R;
 absTol= 1e-10;
 relTol = 1e-6;
 time = 2*pi/norm(omega_init);
-tstart = 0; tend = T_orbit;
+tstart = 0; tend = 0.01*T_orbit;
 
 %% Simulate
 out = sim("main");
@@ -52,8 +52,9 @@ R_quat = out.R_Quat.Data(:,:);
 %orbit propagation
 state_out = out.orbit_state.Data(:,:)';
 %% Get different coordinate frames with respect to inertial frame
+Rot = R_euler;
 [Xp, Yp, Zp, Xb, Yb, Zb] = principal_body_frame_inertial(Rot, R_princ);
-[R, T, N] = RTN_frame_inertial(state);
+[R, T, N] = RTN_frame_inertial(state_out);
 
 %% Plotting PS2
 % Plot omega over time
