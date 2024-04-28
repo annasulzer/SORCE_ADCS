@@ -8,19 +8,16 @@ close all;
 %%
 %Initial conditions
 [state_ECI_init, T_orbit] = OrbitPropagation();
-omega_init = [0.1; 0.0; 0.0];
+omega_init = [0.0; 0.0; 0.1];
 
-att_init = [0, 90, 0]; %3,2,3
-R = rotz(-att_init(1))*rotx(-att_init(2))*rotz(-att_init(3));
+%att_init = [0, 90, 0]; %3,2,3
+%R = rotz(-att_init(1))*rotx(-att_init(2))*rotz(-att_init(3));
 
-%body axes expressed in inertial frame
-x = R*[1,0,0]';
-y = R*[0,1,0]';
-z = R*[0,0,1]';
+[R, T, N] = RTN_frame_inertial(state_ECI_init');
 
+Rot = [R; T; N];
 
-% Quaternions
-DCM = R;
+DCM = Rot;
 
 [R_princ,inertia_p] = inertia(); %inertia in principal axes
 %inertia_p = [85.075, 0, 0; 0, 85.075, 0; 0, 0, 120.2515]; %axial symmetric
@@ -29,7 +26,7 @@ DCM = R;
 absTol= 1e-10;
 relTol = 1e-6;
 time = 2*pi/norm(omega_init);
-tstart = 0; tend = 0.01*T_orbit;
+tstart = 0; tend = 0.1*T_orbit;
 
 %% Simulate
 out = sim("main");
