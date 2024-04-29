@@ -8,9 +8,9 @@ close all;
 %%
 %Initial conditions
 [state_ECI_init, T_orbit] = OrbitPropagation();
-omega_init = [0.0; 0.0; 0.1];
+omega_init = [0.05; 0.0; 0.1];
 
-att_init = [0, 90, 10]; %3,1,3
+att_init = [0, 90, 0]; %3,1,3
 Rot = rotz(-att_init(3))*rotx(-att_init(2))*rotz(-att_init(1));
 
 %[R, T, N] = RTN_frame_inertial(state_ECI_init');
