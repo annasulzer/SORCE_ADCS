@@ -10,12 +10,12 @@ close all;
 [state_ECI_init, T_orbit] = OrbitPropagation();
 omega_init = [0.0; 0.0; 0.1];
 
-%att_init = [0, 90, 0]; %3,2,3
-%R = rotz(-att_init(1))*rotx(-att_init(2))*rotz(-att_init(3));
+att_init = [0, 90, 10]; %3,1,3
+Rot = rotz(-att_init(3))*rotx(-att_init(2))*rotz(-att_init(1));
 
-[R, T, N] = RTN_frame_inertial(state_ECI_init');
+%[R, T, N] = RTN_frame_inertial(state_ECI_init');
 
-Rot = [R; T; N];
+%Rot = [R',T', N'];
 
 DCM = Rot;
 
@@ -25,7 +25,7 @@ DCM = Rot;
 %Integration settings
 absTol= 1e-10;
 relTol = 1e-6;
-time = 2*pi/norm(omega_init);
+%time = 2*pi/norm(omega_init);
 tstart = 0; tend = 0.1*T_orbit;
 
 %% Simulate
