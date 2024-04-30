@@ -8,13 +8,12 @@ close all;
 %%
 %Initial conditions
 [state_ECI_init, T_orbit] = OrbitPropagation();
-omega_init = [0.0; 0.1; 0.0001];
+omega_init = [0.1; 0.08; 0.15];
 
 att_init = [0, 90, 0]; %3,1,3
 Rot = rotz(-att_init(3))*rotx(-att_init(2))*rotz(-att_init(1));
 
 %[R, T, N] = RTN_frame_inertial(state_ECI_init');
-
 %Rot = [R',T', N']';
 
 DCM_initial = Rot;
@@ -26,7 +25,7 @@ DCM_initial = Rot;
 absTol= 1e-10;
 relTol = 1e-6;
 %time = 2*pi/norm(omega_init);
-tstart = 0; tend = 0.5*T_orbit;
+tstart = 0; tend = 5*T_orbit;
 
 %% Simulate
 out = sim("main");
@@ -46,6 +45,7 @@ DCM_out = out.DCM.Data(:,:,:);
 
 %orbit propagation
 state_out = out.orbit_state.Data(:,:)';
+torque_out = out.M.Data(:,:)';
 %% Get different coordinate frames with respect to inertial frame
 Rot = DCM_out;
 [Xp, Yp, Zp, Xb, Yb, Zb] = principal_body_frame_inertial(Rot, R_princ);
@@ -311,4 +311,20 @@ xlabel('t [s]')
 ylabel('\omega_z [rad/s]')
 
 
+
+%% Problem 4
+% Verify magnitude
+
+
+%Plot Torque over time
+figure()
+hold on;
+plot(t_out, torque_out(:, 1), LineWidth=2)
+plot(t_out, torque_out(:, 2), '--', LineWidth=2)
+plot(t_out, torque_out(:, 3), LineWidth=2)
+plot(t_out, sqrt(torque_out(:, 1).^2 + torque_out(:, 2).^2 + torque_out(:, 3).^2), LineWidth=2)
+xlabel('t [s]')
+ylabel('M [Nm]')
+legend('M_x', 'M_y', 'M_z', 'M_{tot}')
+title('Torque over time (one orbit)')
 
