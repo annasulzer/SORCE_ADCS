@@ -8,7 +8,14 @@ close all;
 %%
 %Initial conditions
 [state_ECI_init, T_orbit] = OrbitPropagation();
-omega_init = [0.0; 0.1; 0.0001];
+omega_init = [0.1; 0.0; 0.0];
+
+% Rotor Spec
+L_r = 2; % Ang Momentum, N*m*s
+w_r = 267; % Ang Vel, rad/s, we can change this
+M_r = 0.0; % Torque, rotor not accelerating, N*m
+I_r = L_r/w_r; % Inertia
+r = [1;0;0]; % Orientation to Principal
 
 att_init = [0, 90, 0]; %3,1,3
 Rot = rotz(-att_init(3))*rotx(-att_init(2))*rotz(-att_init(1));
@@ -195,29 +202,25 @@ Rot = DCM_out;
 % xlabel('t [s]')
 % ylabel('\psi [deg]')
 % 
-% %% Check Attitude Representation
-% % Angular Momentum Vector
-% figure()
-% subplot(3,1,1)
-% hold on;
-% plot(t_out, L_inertial_euler_out(:, 1), 'blue')
-% plot(t_out, L_inertial_quat_out(:, 1), '--', 'Color','red')
-% xlabel('t [s]')
-% ylabel('L_x [kg*m^2/s]')
-% title('Inertial angular momentum vector over time from the euler angles (blue) and quaternions (red)')
-% subplot(3,1,2)
-% hold on;
-% plot(t_out, L_inertial_euler_out(:, 2), 'blue')
-% plot(t_out, L_inertial_quat_out(:, 2), '--', 'Color','red')
-% xlabel('t [s]')
-% ylabel('L_y [kg*m^2/s]')
-% subplot(3,1,3)
-% hold on;
-% plot(t_out, L_inertial_euler_out(:, 3), 'blue')
-% plot(t_out, L_inertial_quat_out(:, 3), '--', 'Color','red')
-% xlabel('t [s]')
-% ylabel('L_z [kg*m^2/s]')
-% legend('Euler Angles', 'Quaternions')
+%% Check Attitude Representation
+% Angular Momentum Vector
+figure()
+subplot(3,1,1)
+hold on;
+plot(t_out, L_out_inertial(:, 1), 'blue')
+xlabel('t [s]')
+ylabel('L_x [kg*m^2/s]')
+title('Inertial angular momentum vector over time from the euler angles')
+subplot(3,1,2)
+hold on;
+plot(t_out, L_out_inertial(:, 2), 'blue')
+xlabel('t [s]')
+ylabel('L_y [kg*m^2/s]')
+subplot(3,1,3)
+hold on;
+plot(t_out, L_out_inertial(:, 3), 'blue')
+xlabel('t [s]')
+ylabel('L_z [kg*m^2/s]')
 % 
 % %%
 % % Plot Omega over time
