@@ -8,13 +8,15 @@ close all;
 %%
 %Initial conditions
 [state_ECI_init, T_orbit] = OrbitPropagation();
-omega_init = [0.1; 0.08; 0.15];
+omega_init = [0.0; 0.0; 0.0];
 
-att_init = [0, 90, 0]; %3,1,3
+%IC based on EULER angle
+att_init = [0, 90, 0]; %313
 Rot = rotz(-att_init(3))*rotx(-att_init(2))*rotz(-att_init(1));
 
-%[R, T, N] = RTN_frame_inertial(state_ECI_init');
-%Rot = [R',T', N']';
+%IC aligned with RTN frame
+% [R, T, N] = RTN_frame_inertial(state_ECI_init');
+% Rot = [R',T', N']';
 
 DCM_initial = Rot;
 
@@ -25,7 +27,7 @@ DCM_initial = Rot;
 absTol= 1e-10;
 relTol = 1e-6;
 %time = 2*pi/norm(omega_init);
-tstart = 0; tend = 5*T_orbit;
+tstart = 0; tend = T_orbit;
 
 %% Simulate
 out = sim("main");
@@ -36,7 +38,7 @@ omega_out = out.omega.Data(:,:)';
 L_out = (inertia_p * omega_out')';
 
 %attitude representation SWITCH
-%quat_out = out.quaternions.Data(:, :)';
+quat_out = out.quaternions.Data(:, :)';
 euler_out = out.euler.Data(:, :)';
 
 omega_out_inertial =  out.omega_inertial.Data(:, :)';
@@ -46,6 +48,7 @@ DCM_out = out.DCM.Data(:,:,:);
 %orbit propagation
 state_out = out.orbit_state.Data(:,:)';
 torque_out = out.M.Data(:,:)';
+
 %% Get different coordinate frames with respect to inertial frame
 Rot = DCM_out;
 [Xp, Yp, Zp, Xb, Yb, Zb] = principal_body_frame_inertial(Rot, R_princ);
@@ -274,55 +277,36 @@ Rot = DCM_out;
 %% Plotting PSET4
 %Euler Angles over time
 figure()
-subplot(3,1,1)
 hold on;
-plot(t_out, rad2deg(euler_out(:, 1)), 'blue')
+plot(t_out, rad2deg(unwrap(euler_out(:, 1))), LineWidth=2)
+plot(t_out, rad2deg(unwrap(euler_out(:, 2))), LineWidth=2)
+plot(t_out, rad2deg(unwrap(euler_out(:, 3))), LineWidth=2)
 xlabel('t [s]')
-ylabel('\phi [deg]')
-title('Euler angles over time')
-subplot(3,1,2)
-hold on;
-plot(t_out, rad2deg(euler_out(:, 2)), 'blue')
-xlabel('t [s]')
-ylabel('\theta [deg]')
-subplot(3,1,3)
-hold on;
-plot(t_out, rad2deg(euler_out(:, 3)), 'blue')
-xlabel('t [s]')
-ylabel('\psi [deg]')
+ylabel('Angle [deg]')
+legend('\phi', '\theta', '\psi')
+title('Euler angles over time (213 sequence)')
 
 %Plot Omega over time
 figure()
-subplot(3,1,1)
 hold on;
-plot(t_out, omega_out_inertial(:, 1), 'blue')
+plot(t_out, omega_out_inertial(:, 1), LineWidth=2)
+plot(t_out, omega_out_inertial(:, 2), LineWidth=2)
+plot(t_out, omega_out_inertial(:, 3), LineWidth=2)
 xlabel('t [s]')
-ylabel('\omega_x [rad/s]')
-title('Inertial angular velocity over time from the euler angles')
-subplot(3,1,2)
-hold on;
-plot(t_out, omega_out_inertial(:, 2), 'blue')
-xlabel('t [s]')
-ylabel('\omega_y [rad/s]')
-subplot(3,1,3)
-hold on;
-plot(t_out, omega_out_inertial(:, 3), 'blue')
-xlabel('t [s]')
-ylabel('\omega_z [rad/s]')
-
+ylabel('\omega [rad/s]')
+legend('X', 'Y', 'Z')
+title('Inertial angular velocity over time')
 
 
 %% Problem 4
 % Verify magnitude
-
-
 %Plot Torque over time
 figure()
 hold on;
 plot(t_out, torque_out(:, 1), LineWidth=2)
-plot(t_out, torque_out(:, 2), '--', LineWidth=2)
-plot(t_out, torque_out(:, 3), LineWidth=2)
-plot(t_out, sqrt(torque_out(:, 1).^2 + torque_out(:, 2).^2 + torque_out(:, 3).^2), LineWidth=2)
+plot(t_out, torque_out(:, 2), '--',LineWidth=2)
+plot(t_out, torque_out(:, 3),LineWidth=2)
+plot(t_out, sqrt(torque_out(:, 1).^2 + torque_out(:, 2).^2 + torque_out(:, 3).^2),'--', LineWidth=2)
 xlabel('t [s]')
 ylabel('M [Nm]')
 legend('M_x', 'M_y', 'M_z', 'M_{tot}')
