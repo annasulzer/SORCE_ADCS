@@ -1,7 +1,7 @@
 %% Orbit Propagator
 %  Anna Sulzer & Ethan Anzia
 %  AA279C PSET2
-function [state_ECI_init, T_orbit] = initialCondition_orbit()
+function [state_ECI_init, T_orbit, n] = initialCondition_orbit()
     % Initial conditions
     mu = 398600.435436; %Earth centered orbit
     rE = 6378;
