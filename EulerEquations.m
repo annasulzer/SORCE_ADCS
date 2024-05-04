@@ -8,26 +8,30 @@ close all;
 %%
 %Initial conditions
 [state_ECI_init, T_orbit] = OrbitPropagation();
-omega_init = [0.1; 0.0; 0.0];
+omega_init = [0.0; 0.0; 0.1];
 
 % Rotor Spec
-L_r = 2; % Ang Momentum, N*m*s
-w_r = 267; % Ang Vel, rad/s, we can change this
+L_r = 0.5; % Ang Momentum, N*m*s
+w_r = 2670; % Ang Vel, rad/s, we can change this
 M_r = 0.0; % Torque, rotor not accelerating, N*m
 I_r = L_r/w_r; % Inertia
 r = [1;0;0]; % Orientation to Principal
 
 att_init = [0, 90, 0]; %3,1,3
-Rot = rotz(-att_init(3))*rotx(-att_init(2))*rotz(-att_init(1));
+%Rot = rotz(-att_init(1))*rotx(-att_init(2))*rotz(-att_init(3));
+Rot = rotx(-att_init(2))*rotz(-att_init(1))*rotz(-att_init(3));
+%Rot = rotz(-att_init(3))*rotz(-att_init(1))*rotx(-att_init(2));
 
-%[R, T, N] = RTN_frame_inertial(state_ECI_init');
+% [R, T, N] = RTN_frame_inertial(state_ECI_init');
 
-%Rot = [R',T', N']';
+% Rot = [R',T', N']';
 
 DCM_initial = Rot;
 
 [R_princ,inertia_p] = inertia(); %inertia in principal axes
 %inertia_p = [85.075, 0, 0; 0, 85.075, 0; 0, 0, 120.2515]; %axial symmetric
+
+omega_init = R_princ' * omega_init
 
 %Integration settings
 absTol= 1e-10;
@@ -183,7 +187,7 @@ Rot = DCM_out;
 % xlabel('t [s]')
 % ylabel('q3')
 % 
-% % Euler Angles over time
+% Euler Angles over time
 % figure()
 % subplot(3,1,1)
 % hold on;
@@ -201,26 +205,39 @@ Rot = DCM_out;
 % plot(t_out, rad2deg(euler_out(:, 3)), 'blue')
 % xlabel('t [s]')
 % ylabel('\psi [deg]')
+
+figure()
+hold on;
+plot(t_out, rad2deg(euler_out(:, 1)), t_out, rad2deg(euler_out(:, 2)), t_out, rad2deg(euler_out(:, 3)),  'LineWidth',2)
+xlabel('t [s]')
+ylabel('Euler Angles [deg]')
+title('Euler angles over time')
+legend('\phi','\theta','\psi')
 % 
 %% Check Attitude Representation
 % Angular Momentum Vector
 figure()
-subplot(3,1,1)
+subplot(4,1,1)
 hold on;
 plot(t_out, L_out_inertial(:, 1), 'blue')
 xlabel('t [s]')
 ylabel('L_x [kg*m^2/s]')
-title('Inertial angular momentum vector over time from the euler angles')
-subplot(3,1,2)
+title('Inertial angular momentum vector over time from the Euler angles')
+subplot(4,1,2)
 hold on;
 plot(t_out, L_out_inertial(:, 2), 'blue')
 xlabel('t [s]')
 ylabel('L_y [kg*m^2/s]')
-subplot(3,1,3)
+subplot(4,1,3)
 hold on;
 plot(t_out, L_out_inertial(:, 3), 'blue')
 xlabel('t [s]')
 ylabel('L_z [kg*m^2/s]')
+subplot(4,1,4)
+hold on;
+plot(t_out, sqrt(L_out_inertial(:, 1).^2 + L_out_inertial(:, 2).^2 + L_out_inertial(:, 3).^2), 'blue')
+xlabel('t [s]')
+ylabel('L [kg*m^2/s]')
 % 
 % %%
 % % Plot Omega over time
@@ -260,11 +277,11 @@ ylabel('L_z [kg*m^2/s]')
 % title('Herpolhode and Angular Momentum Vector based on Quaternions')
 % view(3)
 % 
-% %Herpolhode Euler
+%Herpolhode Euler
 % figure()
 % hold on;
-% plot3(omega_inertial_euler_out(:,1), omega_inertial_euler_out(:,2), omega_inertial_euler_out(:, 3), 'Color', 'black', 'LineWidth', 1)
-% quiver3(0,0,0, L_inertial_euler_out(1,1)/50, L_inertial_euler_out(1,2)/50, L_inertial_euler_out(1,3)/50,'LineWidth', 1)
+% plot3(omega_out_inertial(:,1), omega_out_inertial(:,2), omega_out_inertial(:, 3), 'Color', 'black', 'LineWidth', 1)
+% quiver3(0,0,0, L_out_inertial(1,1)/50, L_out_inertial(1,2)/50, L_out_inertial(1,3)/50,'LineWidth', 1)
 % axis equal;
 % grid on;
 % xlabel('x')
@@ -276,42 +293,58 @@ ylabel('L_z [kg*m^2/s]')
 % 
 %% Plotting PSET4
 %Euler Angles over time
-figure()
-subplot(3,1,1)
-hold on;
-plot(t_out, rad2deg(euler_out(:, 1)), 'blue')
-xlabel('t [s]')
-ylabel('\phi [deg]')
-title('Euler angles over time')
-subplot(3,1,2)
-hold on;
-plot(t_out, rad2deg(euler_out(:, 2)), 'blue')
-xlabel('t [s]')
-ylabel('\theta [deg]')
-subplot(3,1,3)
-hold on;
-plot(t_out, rad2deg(euler_out(:, 3)), 'blue')
-xlabel('t [s]')
-ylabel('\psi [deg]')
+% figure()
+% subplot(3,1,1)
+% hold on;
+% plot(t_out, rad2deg(euler_out(:, 1)), 'blue')
+% xlabel('t [s]')
+% ylabel('\phi [deg]')
+% title('Euler angles over time')
+% subplot(3,1,2)
+% hold on;
+% plot(t_out, rad2deg(euler_out(:, 2)), 'blue')
+% xlabel('t [s]')
+% ylabel('\theta [deg]')
+% subplot(3,1,3)
+% hold on;
+% plot(t_out, rad2deg(euler_out(:, 3)), 'blue')
+% xlabel('t [s]')
+% ylabel('\psi [deg]')
 
 %Plot Omega over time
-figure()
-subplot(3,1,1)
-hold on;
-plot(t_out, omega_out_inertial(:, 1), 'blue')
-xlabel('t [s]')
-ylabel('\omega_x [rad/s]')
-title('Inertial angular velocity over time from the euler angles')
-subplot(3,1,2)
-hold on;
-plot(t_out, omega_out_inertial(:, 2), 'blue')
-xlabel('t [s]')
-ylabel('\omega_y [rad/s]')
-subplot(3,1,3)
-hold on;
-plot(t_out, omega_out_inertial(:, 3), 'blue')
-xlabel('t [s]')
-ylabel('\omega_z [rad/s]')
+% figure()
+% subplot(3,1,1)
+% hold on;
+% plot(t_out, omega_out_inertial(:, 1), 'blue')
+% xlabel('t [s]')
+% ylabel('\omega_x [rad/s]')
+% title('Inertial angular velocity over time from the euler angles')
+% subplot(3,1,2)
+% hold on;
+% plot(t_out, omega_out_inertial(:, 2), 'blue')
+% xlabel('t [s]')
+% ylabel('\omega_y [rad/s]')
+% subplot(3,1,3)
+% hold on;
+% plot(t_out, omega_out_inertial(:, 3), 'blue')
+% xlabel('t [s]')
+% ylabel('\omega_z [rad/s]')
+% hold off
 
+figure()
+hold on;
+plot(t_out, omega_out_inertial(:, 1), t_out, omega_out_inertial(:, 2), t_out, omega_out_inertial(:, 3), 'LineWidth',2)
+xlabel('t [s]')
+ylabel('\omega [rad/s]')
+title('Inertial angular velocity over time from the euler angles')
+legend('\omega_x','\omega_y','\omega_z')
+
+figure()
+hold on;
+plot(t_out, omega_out(:, 1), t_out, omega_out(:, 2), t_out, omega_out(:, 3), 'LineWidth',2)
+xlabel('t [s]')
+ylabel('\omega [rad/s]')
+title('Inertial angular velocity over time from the euler angles')
+legend('\omega_x','\omega_y','\omega_z')
 
 
