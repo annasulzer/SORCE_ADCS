@@ -7,6 +7,7 @@ clear; clc;
 close all;
 %%
 [R_princ,inertia_p] = inertia(); %inertia in principal axes
+
 inertia_p = [85.075, 0, 0; 0, 85.075, 0; 0, 0, 120.2515]; %axial symmetric
 %inertia_p = diag([100, 85, 110]); %unstable pitch
 %inertia_p = diag([120, 85, 60]); %unstable in all
@@ -17,6 +18,17 @@ inertia_p = [85.075, 0, 0; 0, 85.075, 0; 0, 0, 120.2515]; %axial symmetric
 %omega_init = R_princ * [0.0001; 0.0001; 0.1];
 omega_init =[n*0.1; n*0.1; n];
 
+%inertia_p = [85.075, 0, 0; 0, 85.075, 0; 0, 0, 120.2515]; %axial symmetric
+
+%Initial conditions
+[state_ECI_init, T_orbit, n] = OrbitPropagation();
+% omega_init = R_princ * [n; 0; 0];
+omega_init = [0.1; 0; 0.1];
+
+UT1 = [1,25,2004,00];
+theta = UT1_to_theta(UT1);
+
+
 %IC based on EULER angle
 % att_init = [-pi/2, 0, 0]; %313
 % Rot2 = roty(-att_init(1))*rotx(-att_init(2))*rotz(-att_init(3));
@@ -25,14 +37,21 @@ omega_init =[n*0.1; n*0.1; n];
 [R, T, N] = RTN_frame_inertial(state_ECI_init');
 Rot = [R',T', N']';
 
+
 DCM_initial = Rot;
 %DCM_initial = R_princ' * Rot * Rot2;
 
+DCM_initial = R_princ' * Rot * Rot2;
+>>>>>>> d84ec15 (Mag torque complete, working on SRP torque, need sun state)
 
 %Integration settings
 absTol= 1e-10;
 relTol = 1e-6;
+
 tstart = 0; tend = 1*T_orbit;
+
+%time = 2*pi/norm(omega_init);
+tstart = 0; tend = 0.1*T_orbit;
 
 %% Simulate
 out = sim("main");
@@ -52,7 +71,8 @@ DCM_out = out.DCM.Data;
 
 %orbit propagation
 state_out = out.orbit_state.Data(:,:)';
-torque_out = out.M.Data(:,:)';
+M_grav_out = out.M_grav.Data(:,:)';
+M_mag_out = out.M_mag.Data(:,:)';
 
 %% Get different coordinate frames with respect to inertial frame
 Rot = DCM_out;
@@ -61,20 +81,20 @@ Rot = DCM_out;
 
 %% Plotting PS2
 % Plot omega over time
-% figure()
-% subplot(3,1,1)
-% plot(t_out, omega_out(:, 1))
-% xlabel('t [s]')
-% ylabel('\omega_x [rad/s]')
-% title('Angular Velocity over time from the numerical integration')
-% subplot(3,1,2)
-% plot(t_out, omega_out(:, 2))
-% xlabel('t [s]')
-% ylabel('\omega_y [rad/s]')
-% subplot(3,1,3)
-% plot(t_out, omega_out(:, 3))
-% xlabel('t [s]')
-% ylabel('\omega_z [rad/s]')
+figure()
+subplot(3,1,1)
+plot(t_out, omega_out(:, 1))
+xlabel('t [s]')
+ylabel('\omega_x [rad/s]')
+title('Angular Velocity over time from the numerical integration')
+subplot(3,1,2)
+plot(t_out, omega_out(:, 2))
+xlabel('t [s]')
+ylabel('\omega_y [rad/s]')
+subplot(3,1,3)
+plot(t_out, omega_out(:, 3))
+xlabel('t [s]')
+ylabel('\omega_z [rad/s]')
 % 
 % % Analytical Solution for axially symmetric satellite
 % %Angular Velocity
@@ -304,4 +324,42 @@ title('Inertial angular velocity over time')
 % ylabel('M [Nm]')
 % legend('M_x', 'M_y', 'M_z', 'M_{tot}')
 % title('Torque over time (one orbit)')
+
+%Plot Torque over time
+figure()
+hold on;
+plot(t_out, M_grav_out(:, 1), LineWidth=2)
+plot(t_out, M_grav_out(:, 2),LineWidth=2)
+plot(t_out, M_grav_out(:, 3),LineWidth=2)
+plot(t_out, sqrt(M_grav_out(:, 1).^2 + M_grav_out(:, 2).^2 + M_grav_out(:, 3).^2), LineWidth=2)
+xlabel('t [s]')
+ylabel('M [Nm]')
+legend('M_x', 'M_y', 'M_z', 'M_{tot}')
+title('Gravity gradient torque over time (one orbit)')
+
+%% Plotting PSET 5
+
+% Verify magnetic torque
+figure()
+hold on;
+plot(t_out, M_mag_out(:, 1), LineWidth=2)
+plot(t_out, M_mag_out(:, 2),LineWidth=2)
+plot(t_out, M_mag_out(:, 3),LineWidth=2)
+plot(t_out, sqrt(M_mag_out(:, 1).^2 + M_mag_out(:, 2).^2 + M_mag_out(:, 3).^2), LineWidth=2)
+xlabel('t [s]')
+ylabel('Magnetic Torque [Nm]')
+legend('M_x', 'M_y', 'M_z', 'M_{tot}')
+title('Magnetic torque over time (one orbit)')
+
+% Verify SRP torque
+figure()
+hold on;
+plot(t_out, M_SRP_out(:, 1), LineWidth=2)
+plot(t_out, M_SRP_out(:, 2),LineWidth=2)
+plot(t_out, M_SRP_out(:, 3),LineWidth=2)
+plot(t_out, sqrt(M_SRP_out(:, 1).^2 + M_SRP_out(:, 2).^2 + M_SRP_out(:, 3).^2), LineWidth=2)
+xlabel('t [s]')
+ylabel('Solar Radiation Pressure Torque [Nm]')
+legend('M_x', 'M_y', 'M_z', 'M_{tot}')
+title('SRP torque over time (one orbit)')
 

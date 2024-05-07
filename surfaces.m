@@ -4,7 +4,7 @@
 
 function [surface] = getsurface(surfacenum)
     if surfacenum == 1
-        surface.bary = [-1.29,-0.19,100.22];
+        surface.bary = [-1.29;-0.19;100.22];
         surface.size = 8660.25;
         surface.unit = [0,0,1];
     end

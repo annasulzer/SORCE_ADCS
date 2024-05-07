@@ -55,7 +55,7 @@ filename = 'Ang_Momentum_Vector.gif';
 
 quiver3(161.35+0.19,0+60.08,169.65+1.29,L_out(1,1),L_out(1,2),L_out(1,3),LineWidth=3,ShowArrowHead='on',Color='red',MaxHeadSize=1)
 
-for k = 1:20:length(t)
+for k = 1:1:length(t)
     view(135,15)
     delete(findobj(gca,'type','Text')); 
     delete(findobj(gca,'type','Quiver'));
@@ -118,7 +118,7 @@ p = plot3(x_position(1),y_position(1),z_position(1),'k','LineWidth',3);
 m = scatter3(x_position(1),y_position(1),z_position(1),'filled','k');
 
 % Iterating through the length of the time array
-for k = 1:5:length(t_out)
+for k = 1:1:length(t_out)
     % Updating the line
     p.XData = x_position(1:k);
     p.YData = y_position(1:k);
