@@ -5,7 +5,7 @@ clear; clc; close all;
 [R_princ,inertia_p] = inertia(); %inertia in principal axes
 %inertia_p = diag([120, 85, 60]); %unstable in all
 %inertia_p = diag([100, 85, 110]); %unstable pitch
-inertia_p = diag([60, 150, 120]); %unstable roll yaw
+%inertia_p = diag([60, 150, 120]); %unstable roll yaw
 
 
 %stability coefficients

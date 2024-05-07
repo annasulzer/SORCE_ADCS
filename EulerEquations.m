@@ -7,7 +7,7 @@ clear; clc;
 close all;
 %%
 [R_princ,inertia_p] = inertia(); %inertia in principal axes
-inertia_p = [85.075, 0, 0; 0, 85.075, 0; 0, 0, 120.2515]; %axial symmetric
+%inertia_p = [85.075, 0, 0; 0, 85.075, 0; 0, 0, 120.2515]; %axial symmetric
 %inertia_p = diag([100, 85, 110]); %unstable pitch
 %inertia_p = diag([120, 85, 60]); %unstable in all
 %inertia_p = diag([60, 150, 120]); %unstable roll yaw
@@ -15,7 +15,7 @@ inertia_p = [85.075, 0, 0; 0, 85.075, 0; 0, 0, 120.2515]; %axial symmetric
 %Initial conditions
 [state_ECI_init, T_orbit, n] = OrbitPropagation();
 %omega_init = R_princ * [0.0001; 0.0001; 0.1];
-omega_init =[n*0.1; n*0.1; n];
+omega_init =[n*0.01; n*0.01; n];
 
 %IC based on EULER angle
 % att_init = [-pi/2, 0, 0]; %313
@@ -32,7 +32,7 @@ DCM_initial = Rot;
 %Integration settings
 absTol= 1e-10;
 relTol = 1e-6;
-tstart = 0; tend = 1*T_orbit;
+tstart = 0; tend = 10*T_orbit;
 
 %% Simulate
 out = sim("main");
