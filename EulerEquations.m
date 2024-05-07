@@ -7,30 +7,32 @@ clear; clc;
 close all;
 %%
 [R_princ,inertia_p] = inertia(); %inertia in principal axes
-%inertia_p = [85.075, 0, 0; 0, 85.075, 0; 0, 0, 120.2515]; %axial symmetric
-
+inertia_p = [85.075, 0, 0; 0, 85.075, 0; 0, 0, 120.2515]; %axial symmetric
+%inertia_p = diag([100, 85, 110]); %unstable pitch
+%inertia_p = diag([120, 85, 60]); %unstable in all
+%inertia_p = diag([60, 150, 120]); %unstable roll yaw
 
 %Initial conditions
 [state_ECI_init, T_orbit, n] = OrbitPropagation();
-omega_init = R_princ * [n; 0; 0];
+%omega_init = R_princ * [0.0001; 0.0001; 0.1];
+omega_init =[n*0.1; n*0.1; n];
 
 %IC based on EULER angle
-att_init = [-pi/2, 0, 0]; %313
-Rot2 = roty(-att_init(1))*rotx(-att_init(2))*rotz(-att_init(3));
+% att_init = [-pi/2, 0, 0]; %313
+% Rot2 = roty(-att_init(1))*rotx(-att_init(2))*rotz(-att_init(3));
 
 %IC aligned with RTN frame
 [R, T, N] = RTN_frame_inertial(state_ECI_init');
 Rot = [R',T', N']';
 
-DCM_initial = R_princ' * Rot * Rot2;
-
+DCM_initial = Rot;
+%DCM_initial = R_princ' * Rot * Rot2;
 
 
 %Integration settings
 absTol= 1e-10;
 relTol = 1e-6;
-%time = 2*pi/norm(omega_init);
-tstart = 0; tend = 5*T_orbit;
+tstart = 0; tend = 1*T_orbit;
 
 %% Simulate
 out = sim("main");
@@ -122,9 +124,9 @@ Rot = DCM_out;
 % xlabel('t [s]')
 % ylabel('\Delta\omega_z [rad/s]')
 % 
-% %% Plotting Angular Momentum Vector
-% % Analytical Solution for axially symmetric satellite
-% %Angular Momentum
+%% Plotting Angular Momentum Vector
+% Analytical Solution for axially symmetric satellite
+%Angular Momentum
 % L_analyt=zeros(length(t_out), 3);
 % L_analyt_init = inertia_p * omega_init;
 % for i = 1:length(t_out)
@@ -159,16 +161,16 @@ Rot = DCM_out;
 
 %% Plot Attitude Representations PS3
 % Quaternions over time
-figure()
-plot(t_out, quat_out(:, 4), LineWidth=2)
-hold on;
-plot(t_out, quat_out(:, 1),  LineWidth=2)
-plot(t_out, quat_out(:, 2),  LineWidth=2)
-plot(t_out, quat_out(:, 3), LineWidth=2)
-xlabel('t [s]')
-ylabel('Quaternions')
-legend('q4', 'q1', 'q2', 'q3')
-title('Quaternions over 5 orbits')
+% figure()
+% plot(t_out, quat_out(:, 4), LineWidth=2)
+% hold on;
+% plot(t_out, quat_out(:, 1),  LineWidth=2)
+% plot(t_out, quat_out(:, 2),  LineWidth=2)
+% plot(t_out, quat_out(:, 3), LineWidth=2)
+% xlabel('t [s]')
+% ylabel('Quaternions')
+% legend('q4', 'q1', 'q2', 'q3')
+% title('Quaternions over 5 orbits')
 % 
 % % Euler Angles over time
 % figure()
@@ -275,7 +277,7 @@ plot(t_out, rad2deg(unwrap(euler_out(:, 3))), LineWidth=2)
 xlabel('t [s]')
 ylabel('Angle [deg]')
 legend('\phi', '\theta', '\psi')
-title('Euler angles over time (313 sequence)')
+title('Euler angles over time (213 sequence)')
 
 %Plot Omega over time
 figure()
@@ -291,15 +293,15 @@ title('Inertial angular velocity over time')
 
 %% Problem 4
 % Verify magnitude
-%Plot Torque over time
-figure()
-hold on;
-plot(t_out, torque_out(:, 1), LineWidth=2)
-plot(t_out, torque_out(:, 2),LineWidth=2)
-plot(t_out, torque_out(:, 3),LineWidth=2)
-plot(t_out, sqrt(torque_out(:, 1).^2 + torque_out(:, 2).^2 + torque_out(:, 3).^2), LineWidth=2)
-xlabel('t [s]')
-ylabel('M [Nm]')
-legend('M_x', 'M_y', 'M_z', 'M_{tot}')
-title('Torque over time (one orbit)')
+% %Plot Torque over time
+% figure()
+% hold on;
+% plot(t_out, torque_out(:, 1), LineWidth=2)
+% plot(t_out, torque_out(:, 2),LineWidth=2)
+% plot(t_out, torque_out(:, 3),LineWidth=2)
+% plot(t_out, sqrt(torque_out(:, 1).^2 + torque_out(:, 2).^2 + torque_out(:, 3).^2), LineWidth=2)
+% xlabel('t [s]')
+% ylabel('M [Nm]')
+% legend('M_x', 'M_y', 'M_z', 'M_{tot}')
+% title('Torque over time (one orbit)')
 

@@ -1,5 +1,5 @@
 % SORCE SADC
-% External Surfaces Discritization 
+% External Surfaces Discritization coordinates in body frame
 % Ethan Anzia and Anna Sulzer
 
 function [surface] = getsurface(surfacenum)
