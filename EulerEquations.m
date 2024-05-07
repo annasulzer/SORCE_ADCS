@@ -365,4 +365,3 @@ xlabel('t [s]')
 ylabel('Solar Radiation Pressure Torque [Nm]')
 legend('M_x', 'M_y', 'M_z', 'M_{tot}')
 title('SRP torque over time (one orbit)')
-
