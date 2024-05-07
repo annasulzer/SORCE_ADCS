@@ -24,26 +24,26 @@ close all;
 %Initial conditions
 %[state_ECI_init, T_orbit, n] = OrbitPropagation();
 % omega_init = R_princ * [n; 0; 0];
-omega_init = [0.1; 0; 0.1];
+omega_init = [0.0110; 0; 0.0];
 
 UT1 = [1,25,2004,00];
 theta = UT1_to_theta(UT1);
 
 %IC based on EULER angle
 att_init = [-pi/2, 0, 0]; %313
-Rot2 = roty(-att_init(1))*rotx(-att_init(2))*rotz(-att_init(3));
+%Rot2 = roty(-att_init(1))*rotx(-att_init(2))*rotz(-att_init(3));
 
 %IC aligned with RTN frame
 [R, T, N] = RTN_frame_inertial(state_ECI_init');
 Rot = [R',T', N']';
 
 DCM_initial = Rot;
-DCM_initial = R_princ' * Rot * Rot2;
+%DCM_initial = R_princ' * Rot * Rot2;
 
 %Integration settings
 absTol= 1e-10;
 relTol = 1e-6;
-tstart = 0; tend = 1*T_orbit;
+tstart = 0; tend = 0.05*T_orbit;
 
 %% Simulate
 out = sim("main");
@@ -54,7 +54,7 @@ omega_out = out.omega.Data(:,:)';
 L_out = (inertia_p * omega_out')';
 
 %attitude representation SWITCH
-quat_out = out.quaternions.Data(:, :)';
+%quat_out = out.quaternions.Data(:, :)';
 euler_out = out.euler.Data(:, :)';
 
 omega_out_inertial =  out.omega_inertial.Data(:, :)';
