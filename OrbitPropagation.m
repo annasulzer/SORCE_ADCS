@@ -1,4 +1,4 @@
-%% Orbit Propagator
+%% Orbit Propagation Initializer Satellite
 %  Anna Sulzer & Ethan Anzia
 %  AA279C PSET2
 function [state_ECI_init, T_orbit, n] = initialCondition_orbit()
@@ -22,7 +22,10 @@ function [state_ECI_init, T_orbit, n] = initialCondition_orbit()
     state_ECI_init = [R_PQW_IJK*state_PQW_init(1:3)';R_PQW_IJK*state_PQW_init(4:6)'] ;
     
     T_orbit = 2*pi*sqrt(a^3/mu);
-end   
+end 
+
+
+
     %Orbit Propagator 
     % tstart = 0; tint = 0.01; tend = 10*T_orbit;
     % %[t_out, state_out] = ode113(@state_dot,[tstart:tint:tend]', state_ECI_init, options);
@@ -55,3 +58,4 @@ end
 %     statedot(1:3) = state(4:6);
 %     statedot(4:6) = -mu * state(1:3)/(norm(state(1:3))^3);
 % end
+

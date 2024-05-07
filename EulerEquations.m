@@ -15,6 +15,7 @@ inertia_p = [85.075, 0, 0; 0, 85.075, 0; 0, 0, 120.2515]; %axial symmetric
 
 %Initial conditions
 [state_ECI_init, T_orbit, n] = OrbitPropagation();
+[t0_MJD_sun, a_sun, Om_sun, e_sun, om_sun, i_sun, M0_sun, n_sun] = OrbitPropagation_Sun();
 %omega_init = R_princ * [0.0001; 0.0001; 0.1];
 omega_init =[n*0.1; n*0.1; n];
 
@@ -23,15 +24,15 @@ omega_init =[n*0.1; n*0.1; n];
 %Initial conditions
 [state_ECI_init, T_orbit, n] = OrbitPropagation();
 % omega_init = R_princ * [n; 0; 0];
-omega_init = [0.1; 0; 0.1];
+%omega_init = [0.1; 0; 0.1];
 
 UT1 = [1,25,2004,00];
-theta = UT1_to_theta(UT1);
+%theta = UT1_to_theta(UT1);
 
 
 %IC based on EULER angle
-% att_init = [-pi/2, 0, 0]; %313
-% Rot2 = roty(-att_init(1))*rotx(-att_init(2))*rotz(-att_init(3));
+att_init = [-pi/2, 0, 0]; %313
+ Rot2 = roty(-att_init(1))*rotx(-att_init(2))*rotz(-att_init(3));
 
 %IC aligned with RTN frame
 [R, T, N] = RTN_frame_inertial(state_ECI_init');
@@ -42,7 +43,7 @@ DCM_initial = Rot;
 %DCM_initial = R_princ' * Rot * Rot2;
 
 DCM_initial = R_princ' * Rot * Rot2;
->>>>>>> d84ec15 (Mag torque complete, working on SRP torque, need sun state)
+%>>>>>>> d84ec15 (Mag torque complete, working on SRP torque, need sun state)
 
 %Integration settings
 absTol= 1e-10;
@@ -71,6 +72,7 @@ DCM_out = out.DCM.Data;
 
 %orbit propagation
 state_out = out.orbit_state.Data(:,:)';
+state_sun_out = out.state_sun_ECI.Data(:,:)';
 M_grav_out = out.M_grav.Data(:,:)';
 M_mag_out = out.M_mag.Data(:,:)';
 M_SRP_out = out.M_SRP.Data(:,:)';
