@@ -73,6 +73,7 @@ DCM_out = out.DCM.Data;
 state_out = out.orbit_state.Data(:,:)';
 M_grav_out = out.M_grav.Data(:,:)';
 M_mag_out = out.M_mag.Data(:,:)';
+M_SRP_out = out.M_SRP.Data(:,:)';
 
 %% Get different coordinate frames with respect to inertial frame
 Rot = DCM_out;
