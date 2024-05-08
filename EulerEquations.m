@@ -8,11 +8,6 @@ close all;
 %%
 [R_princ,inertia_p] = inertia(); %inertia in principal axes
 
-%inertia_p = [85.075, 0, 0; 0, 85.075, 0; 0, 0, 120.2515]; %axial symmetric
-%inertia_p = diag([100, 85, 110]); %unstable pitch
-%inertia_p = diag([120, 85, 60]); %unstable in all
-%inertia_p = diag([60, 150, 120]); %unstable roll yaw
-
 %Initial conditions
 [state_ECI_init, T_orbit, n] = OrbitPropagation();
 [t0_MJD_sun, a_sun, Om_sun, e_sun, om_sun, i_sun, M0_sun, n_sun] = OrbitPropagation_Sun();
@@ -24,7 +19,7 @@ close all;
 %Initial conditions
 %[state_ECI_init, T_orbit, n] = OrbitPropagation();
 % omega_init = R_princ * [n; 0; 0];
-omega_init = [0.0110; 0; 0.0];
+omega_init = [0.05; 0; 0.1];
 
 UT1 = [1,25,2004,00];
 theta = UT1_to_theta(UT1);
@@ -43,7 +38,7 @@ DCM_initial = Rot;
 %Integration settings
 absTol= 1e-10;
 relTol = 1e-6;
-tstart = 0; tend = 0.05*T_orbit;
+tstart = 0; tend = 0.1*T_orbit;
 
 %% Simulate
 out = sim("main");
@@ -67,6 +62,7 @@ state_sun_out = out.state_sun_ECI.Data(:,:)';
 M_grav_out = out.M_grav.Data(:,:)';
 M_mag_out = out.M_mag.Data(:,:)';
 M_SRP_out = out.M_SRP.Data(:,:)';
+M_aero_out = out.M_aero.Data(:,:)';
 
 %% Get different coordinate frames with respect to inertial frame
 Rot = DCM_out;
@@ -356,3 +352,15 @@ xlabel('t [s]')
 ylabel('Solar Radiation Pressure Torque [Nm]')
 legend('M_x', 'M_y', 'M_z', 'M_{tot}')
 title('SRP torque over time (one orbit)')
+
+% Verify Aero torque
+figure()
+hold on;
+plot(t_out, M_aero_out(:, 1), LineWidth=2)
+plot(t_out, M_aero_out(:, 2),LineWidth=2)
+plot(t_out, M_aero_out(:, 3),LineWidth=2)
+plot(t_out, sqrt(M_aero_out(:, 1).^2 + M_aero_out(:, 2).^2 + M_aero_out(:, 3).^2), LineWidth=2)
+xlabel('t [s]')
+ylabel('Aerodynamic Torque [Nm]')
+legend('M_x', 'M_y', 'M_z', 'M_{tot}')
+title('Aerodynamic torque over time (one orbit)')
