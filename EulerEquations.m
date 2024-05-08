@@ -19,7 +19,7 @@ close all;
 %Initial conditions
 %[state_ECI_init, T_orbit, n] = OrbitPropagation();
 % omega_init = R_princ * [n; 0; 0];
-omega_init = [0.05; 0; 0.1];
+omega_init = [0.0; 0.0; 0.0];
 
 UT1 = [1,25,2004,00];
 theta = UT1_to_theta(UT1);
@@ -38,7 +38,7 @@ DCM_initial = Rot;
 %Integration settings
 absTol= 1e-10;
 relTol = 1e-6;
-tstart = 0; tend = 0.1*T_orbit;
+tstart = 0; tend = 1*T_orbit;
 
 %% Simulate
 out = sim("main");
