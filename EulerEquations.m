@@ -7,15 +7,16 @@ clear; clc;
 close all;
 %%
 [R_princ,inertia_p] = inertia(); %inertia in principal axes
-%inertia_p = [85.075, 0, 0; 0, 85.075, 0; 0, 0, 120.2515]; %axial symmetric
+
 %inertia_p = diag([100, 85, 110]); %unstable pitch
 %inertia_p = diag([120, 85, 60]); %unstable in all
 %inertia_p = diag([60, 150, 120]); %unstable roll yaw
+%inertia_p = diag([100, 120, 60]); %unstable roll yaw
 
 %Initial conditions
 [state_ECI_init, T_orbit, n] = OrbitPropagation();
 %omega_init = R_princ * [0.0001; 0.0001; 0.1];
-omega_init =[n*0.01; n*0.01; n];
+omega_init =[0.01*n; 0.01*n; n];
 
 %IC based on EULER angle
 % att_init = [-pi/2, 0, 0]; %313
@@ -58,6 +59,23 @@ torque_out = out.M.Data(:,:)';
 Rot = DCM_out;
 [Xp, Yp, Zp, Xb, Yb, Zb] = principal_body_frame_inertial(Rot, R_princ);
 [R, T, N] = RTN_frame_inertial(state_out);
+
+
+%%
+angles = zeros(length(euler_out(:,1)), 3);
+for i = 1:length(angles(:, 1))
+    [angle1, angle2, angle3] = dcm2angle(DCM_out(:,:, i)*[R(i, :)',T(i, :)', N(i, :)'], 'XYZ');
+     angles(i, :) =  [angle1, angle2, angle3];
+end
+figure()
+hold on;
+plot(t_out, rad2deg(unwrap(angles(:, 1))), LineWidth=2)
+plot(t_out, rad2deg(unwrap(angles(:, 2))), LineWidth=2)
+plot(t_out, rad2deg(unwrap(angles(:, 3))), LineWidth=2)
+xlabel('t [s]')
+ylabel('Angle [deg]')
+legend('\alpha_x', '\alpha_y', '\alpha_z')
+title('Angles from RTN frame')
 
 %% Plotting PS2
 % Plot omega over time
@@ -159,6 +177,16 @@ Rot = DCM_out;
 % xlabel('t [s]')
 % ylabel('L_z [kg*m^2/s]')
 
+
+%Plot Angular Momentum
+figure()
+hold on;
+plot(t_out, L_out(:, 1), LineWidth=2)
+plot(t_out, L_out(:, 2), LineWidth=2)
+plot(t_out, L_out(:, 3), LineWidth=2)
+xlabel('t [s]')
+legend('X', 'Y', 'Z')
+ylabel('L [kg*m^2/s]')
 %% Plot Attitude Representations PS3
 % Quaternions over time
 % figure()

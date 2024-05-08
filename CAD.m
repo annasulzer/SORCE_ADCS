@@ -154,17 +154,17 @@ for k = 1:5:length(t_out)
     title(sprintf('SORCE Orbit with RTN, Body, and Principal Axes\nTime: %0.2f sec', t_out(k)),...
     'Interpreter','Latex');
     % Delay
-    pause(0.000000001)
+    pause(0.0000000000000001)
     % Saving the figure
     frame = getframe(gcf);
     im = frame2im(frame);
     [imind,cm] = rgb2ind(im,256);
     if k == 1
         imwrite(imind,cm,filename,'gif', 'Loopcount',inf,...
-        'DelayTime',0.1);
+        'DelayTime',2);
     else
         imwrite(imind,cm,filename,'gif','WriteMode','append',...
-        'DelayTime',0.1);
+        'DelayTime',2);
     end
 end
 

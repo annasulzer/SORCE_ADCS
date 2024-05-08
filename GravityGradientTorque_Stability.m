@@ -2,16 +2,17 @@
 %  Anna Sulzer & Ethan Anzia
 %  AA279C PSET5
 clear; clc; close all;
-[R_princ,inertia_p] = inertia(); %inertia in principal axes
+%[R_princ,inertia_p] = inertia(); %inertia in principal axes
+%inertia_p = diag([60, 150, 120]);
 %inertia_p = diag([120, 85, 60]); %unstable in all
 %inertia_p = diag([100, 85, 110]); %unstable pitch
-%inertia_p = diag([60, 150, 120]); %unstable roll yaw
+%inertia_p = diag([100, 120, 60]); %unstable roll yaw
 
 
 %stability coefficients
 KN = (inertia_p(2,2) - inertia_p(1,1))/ inertia_p(3,3);
-KR = (inertia_p(3,3) - inertia_p(2,2))/ inertia_p(1,1);%Kt
-KT = (inertia_p(3,3) - inertia_p(1,1))/ inertia_p(2,2);%Kr
+KR = (inertia_p(3,3) - inertia_p(2,2))/ inertia_p(1,1);
+KT = (inertia_p(3,3) - inertia_p(1,1))/ inertia_p(2,2);
 
 %specify grid
 kR = -1:0.001:1 ; 
