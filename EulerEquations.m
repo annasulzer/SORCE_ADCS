@@ -39,7 +39,7 @@ DCM_initial = Rot;
 absTol= 1e-10;
 relTol = 1e-6;
 %time = 2*pi/norm(omega_init);
-tstart = 0; tend = 0.1*T_orbit;
+tstart = 0; tend = T_orbit;
 
 %% Simulate
 out = sim("main");
@@ -64,6 +64,7 @@ M_grav_out = out.M_grav.Data(:,:)';
 M_mag_out = out.M_mag.Data(:,:)';
 M_SRP_out = out.M_SRP.Data(:,:)';
 M_aero_out = out.M_aero.Data(:,:)';
+M_ALL_out = out.M_ALL.Data(:,:)';
 
 %% Get different coordinate frames with respect to inertial frame
 Rot = DCM_out;
@@ -323,9 +324,10 @@ plot(t_out, M_grav_out(:, 1), LineWidth=2)
 plot(t_out, M_grav_out(:, 2),LineWidth=2)
 plot(t_out, M_grav_out(:, 3),LineWidth=2)
 plot(t_out, sqrt(M_grav_out(:, 1).^2 + M_grav_out(:, 2).^2 + M_grav_out(:, 3).^2), LineWidth=2)
+yline(6.167e-5,'--k','LineWidth',2)
 xlabel('t [s]')
 ylabel('M [Nm]')
-legend('M_x', 'M_y', 'M_z', 'M_{tot}')
+legend('M_x', 'M_y', 'M_z', 'M_{tot}','M_{max}')
 title('Gravity gradient torque over time (one orbit)')
 
 %% Plotting PSET 5
@@ -337,9 +339,12 @@ plot(t_out, M_mag_out(:, 1), LineWidth=2)
 plot(t_out, M_mag_out(:, 2),LineWidth=2)
 plot(t_out, M_mag_out(:, 3),LineWidth=2)
 plot(t_out, sqrt(M_mag_out(:, 1).^2 + M_mag_out(:, 2).^2 + M_mag_out(:, 3).^2), LineWidth=2)
+M_mag_max = 2*0.000154100322136014*(6378^3)*(3.08e-5)/((7.0049e3)^3)
+yline(M_mag_max,'--k','LineWidth',2)
+yline(-M_mag_max,'--k','LineWidth',2)
 xlabel('t [s]')
 ylabel('Magnetic Torque [Nm]')
-legend('M_x', 'M_y', 'M_z', 'M_{tot}')
+legend('M_x', 'M_y', 'M_z', 'M_{tot}','M_{max}')
 title('Magnetic torque over time (one orbit)')
 
 % Verify SRP torque
@@ -349,9 +354,11 @@ plot(t_out, M_SRP_out(:, 1), LineWidth=2)
 plot(t_out, M_SRP_out(:, 2),LineWidth=2)
 plot(t_out, M_SRP_out(:, 3),LineWidth=2)
 plot(t_out, sqrt(M_SRP_out(:, 1).^2 + M_SRP_out(:, 2).^2 + M_SRP_out(:, 3).^2), LineWidth=2)
+M_SRP_max = (1358/(3e8))*((8660.25+9139.44+6*6908.59)/(100^2))*(1+0.85)*(15/100)
+yline(M_SRP_max,'--k','LineWidth',2)
 xlabel('t [s]')
 ylabel('Solar Radiation Pressure Torque [Nm]')
-legend('M_x', 'M_y', 'M_z', 'M_{tot}')
+legend('M_x', 'M_y', 'M_z', 'M_{tot}','M_{max}')
 title('SRP torque over time (one orbit)')
 
 % Verify Aero torque
@@ -361,7 +368,30 @@ plot(t_out, M_aero_out(:, 1), LineWidth=2)
 plot(t_out, M_aero_out(:, 2),LineWidth=2)
 plot(t_out, M_aero_out(:, 3),LineWidth=2)
 plot(t_out, sqrt(M_aero_out(:, 1).^2 + M_aero_out(:, 2).^2 + M_aero_out(:, 3).^2), LineWidth=2)
+M_aero_max = 0.5*1.454e-13*((7.5634e3)^2)*1.28*((8660.25+9139.44+6*6908.59)/(100^2))*(15/100)
+yline(M_aero_max,'--k','LineWidth',2)
 xlabel('t [s]')
 ylabel('Aerodynamic Torque [Nm]')
-legend('M_x', 'M_y', 'M_z', 'M_{tot}')
+legend('M_x', 'M_y', 'M_z', 'M_{tot}','M_{max}')
 title('Aerodynamic torque over time (one orbit)')
+
+% All torques
+figure()
+hold on;
+plot(t_out, sqrt(M_mag_out(:, 1).^2 + M_mag_out(:, 2).^2 + M_mag_out(:, 3).^2), LineWidth=2)
+plot(t_out, sqrt(M_SRP_out(:, 1).^2 + M_SRP_out(:, 2).^2 + M_SRP_out(:, 3).^2), LineWidth=2)
+plot(t_out, sqrt(M_aero_out(:, 1).^2 + M_aero_out(:, 2).^2 + M_aero_out(:, 3).^2), LineWidth=2)
+plot(t_out, sqrt(M_grav_out(:, 1).^2 + M_grav_out(:, 2).^2 + M_grav_out(:, 3).^2), LineWidth=2)
+xlabel('t [s]')
+ylabel('Torque [Nm]')
+legend('M_{mag}', 'M_{SRP}', 'M_{aero}', 'M_{grav}')
+title('All torques over time (one orbit)')
+
+% Resultant torques
+figure()
+hold on;
+plot(t_out, M_ALL_out, LineWidth=2)
+xlabel('t [s]')
+ylabel('Torque [Nm]')
+legend('M_x', 'M_y', 'M_z')
+title('Resultant total torque over time (one orbit)')
