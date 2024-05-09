@@ -1,10 +1,10 @@
 % SORCE SADC
-% External Surfaces Discritization 
+% External Surfaces Discritization coordinates in body frame
 % Ethan Anzia and Anna Sulzer
 
 function [surface] = getsurface(surfacenum)
     if surfacenum == 1
-        surface.bary = [-1.29,-0.19,100.22];
+        surface.bary = [-1.29;-0.19;100.22];
         surface.size = 8660.25;
         surface.unit = [0,0,1];
     end

@@ -7,12 +7,22 @@ clear; clc;
 close all;
 %%
 [R_princ,inertia_p] = inertia(); %inertia in principal axes
-%inertia_p = [85.075, 0, 0; 0, 85.075, 0; 0, 0, 120.2515]; %axial symmetric
-
 
 %Initial conditions
 [state_ECI_init, T_orbit, n] = OrbitPropagation();
-omega_init = R_princ * [n; 0; 0];
+[t0_MJD_sun, a_sun, Om_sun, e_sun, om_sun, i_sun, M0_sun, n_sun] = OrbitPropagation_Sun();
+%omega_init = R_princ * [0.0001; 0.0001; 0.1];
+%omega_init =[n*0.1; n*0.1; n];
+
+%inertia_p = [85.075, 0, 0; 0, 85.075, 0; 0, 0, 120.2515]; %axial symmetric
+
+%Initial conditions
+[state_ECI_init, T_orbit, n] = OrbitPropagation();
+% omega_init = R_princ * [n; 0; 0];
+omega_init = [0; 0; 0];
+
+UT1 = [1,25,2004,00];
+theta = UT1_to_theta(UT1);
 
 %IC based on EULER angle
 att_init = [-pi/2, 0, 0]; %313
@@ -22,15 +32,14 @@ Rot2 = roty(-att_init(1))*rotx(-att_init(2))*rotz(-att_init(3));
 [R, T, N] = RTN_frame_inertial(state_ECI_init');
 Rot = [R',T', N']';
 
-DCM_initial = R_princ' * Rot * Rot2;
-
-
+DCM_initial = Rot;
+%DCM_initial = R_princ' * Rot * Rot2;
 
 %Integration settings
 absTol= 1e-10;
 relTol = 1e-6;
 %time = 2*pi/norm(omega_init);
-tstart = 0; tend = 5*T_orbit;
+tstart = 0; tend = T_orbit;
 
 %% Simulate
 out = sim("main");
@@ -41,7 +50,7 @@ omega_out = out.omega.Data(:,:)';
 L_out = (inertia_p * omega_out')';
 
 %attitude representation SWITCH
-quat_out = out.quaternions.Data(:, :)';
+%quat_out = out.quaternions.Data(:, :)';
 euler_out = out.euler.Data(:, :)';
 
 omega_out_inertial =  out.omega_inertial.Data(:, :)';
@@ -50,7 +59,12 @@ DCM_out = out.DCM.Data;
 
 %orbit propagation
 state_out = out.orbit_state.Data(:,:)';
-torque_out = out.M.Data(:,:)';
+state_sun_out = out.state_sun_ECI.Data(:,:)';
+M_grav_out = out.M_grav.Data(:,:)';
+M_mag_out = out.M_mag.Data(:,:)';
+M_SRP_out = out.M_SRP.Data(:,:)';
+M_aero_out = out.M_aero.Data(:,:)';
+M_ALL_out = out.M_ALL.Data(:,:)';
 
 %% Get different coordinate frames with respect to inertial frame
 Rot = DCM_out;
@@ -59,20 +73,20 @@ Rot = DCM_out;
 
 %% Plotting PS2
 % Plot omega over time
-% figure()
-% subplot(3,1,1)
-% plot(t_out, omega_out(:, 1))
-% xlabel('t [s]')
-% ylabel('\omega_x [rad/s]')
-% title('Angular Velocity over time from the numerical integration')
-% subplot(3,1,2)
-% plot(t_out, omega_out(:, 2))
-% xlabel('t [s]')
-% ylabel('\omega_y [rad/s]')
-% subplot(3,1,3)
-% plot(t_out, omega_out(:, 3))
-% xlabel('t [s]')
-% ylabel('\omega_z [rad/s]')
+figure()
+subplot(3,1,1)
+plot(t_out, omega_out(:, 1))
+xlabel('t [s]')
+ylabel('\omega_x [rad/s]')
+title('Angular Velocity over time from the numerical integration')
+subplot(3,1,2)
+plot(t_out, omega_out(:, 2))
+xlabel('t [s]')
+ylabel('\omega_y [rad/s]')
+subplot(3,1,3)
+plot(t_out, omega_out(:, 3))
+xlabel('t [s]')
+ylabel('\omega_z [rad/s]')
 % 
 % % Analytical Solution for axially symmetric satellite
 % %Angular Velocity
@@ -122,9 +136,9 @@ Rot = DCM_out;
 % xlabel('t [s]')
 % ylabel('\Delta\omega_z [rad/s]')
 % 
-% %% Plotting Angular Momentum Vector
-% % Analytical Solution for axially symmetric satellite
-% %Angular Momentum
+%% Plotting Angular Momentum Vector
+% Analytical Solution for axially symmetric satellite
+%Angular Momentum
 % L_analyt=zeros(length(t_out), 3);
 % L_analyt_init = inertia_p * omega_init;
 % for i = 1:length(t_out)
@@ -159,16 +173,16 @@ Rot = DCM_out;
 
 %% Plot Attitude Representations PS3
 % Quaternions over time
-figure()
-plot(t_out, quat_out(:, 4), LineWidth=2)
-hold on;
-plot(t_out, quat_out(:, 1),  LineWidth=2)
-plot(t_out, quat_out(:, 2),  LineWidth=2)
-plot(t_out, quat_out(:, 3), LineWidth=2)
-xlabel('t [s]')
-ylabel('Quaternions')
-legend('q4', 'q1', 'q2', 'q3')
-title('Quaternions over 5 orbits')
+% figure()
+% plot(t_out, quat_out(:, 4), LineWidth=2)
+% hold on;
+% plot(t_out, quat_out(:, 1),  LineWidth=2)
+% plot(t_out, quat_out(:, 2),  LineWidth=2)
+% plot(t_out, quat_out(:, 3), LineWidth=2)
+% xlabel('t [s]')
+% ylabel('Quaternions')
+% legend('q4', 'q1', 'q2', 'q3')
+% title('Quaternions over 5 orbits')
 % 
 % % Euler Angles over time
 % figure()
@@ -275,7 +289,7 @@ plot(t_out, rad2deg(unwrap(euler_out(:, 3))), LineWidth=2)
 xlabel('t [s]')
 ylabel('Angle [deg]')
 legend('\phi', '\theta', '\psi')
-title('Euler angles over time (313 sequence)')
+title('Euler angles over time (213 sequence)')
 
 %Plot Omega over time
 figure()
@@ -291,15 +305,93 @@ title('Inertial angular velocity over time')
 
 %% Problem 4
 % Verify magnitude
+% %Plot Torque over time
+% figure()
+% hold on;
+% plot(t_out, torque_out(:, 1), LineWidth=2)
+% plot(t_out, torque_out(:, 2),LineWidth=2)
+% plot(t_out, torque_out(:, 3),LineWidth=2)
+% plot(t_out, sqrt(torque_out(:, 1).^2 + torque_out(:, 2).^2 + torque_out(:, 3).^2), LineWidth=2)
+% xlabel('t [s]')
+% ylabel('M [Nm]')
+% legend('M_x', 'M_y', 'M_z', 'M_{tot}')
+% title('Torque over time (one orbit)')
+
 %Plot Torque over time
 figure()
 hold on;
-plot(t_out, torque_out(:, 1), LineWidth=2)
-plot(t_out, torque_out(:, 2),LineWidth=2)
-plot(t_out, torque_out(:, 3),LineWidth=2)
-plot(t_out, sqrt(torque_out(:, 1).^2 + torque_out(:, 2).^2 + torque_out(:, 3).^2), LineWidth=2)
+plot(t_out, M_grav_out(:, 1), LineWidth=2)
+plot(t_out, M_grav_out(:, 2),LineWidth=2)
+plot(t_out, M_grav_out(:, 3),LineWidth=2)
+plot(t_out, sqrt(M_grav_out(:, 1).^2 + M_grav_out(:, 2).^2 + M_grav_out(:, 3).^2), LineWidth=2)
+yline(6.167e-5,'--k','LineWidth',2)
 xlabel('t [s]')
 ylabel('M [Nm]')
-legend('M_x', 'M_y', 'M_z', 'M_{tot}')
-title('Torque over time (one orbit)')
+legend('M_x', 'M_y', 'M_z', 'M_{tot}','M_{max}')
+title('Gravity gradient torque over time (one orbit)')
 
+%% Plotting PSET 5
+
+% Verify magnetic torque
+figure()
+hold on;
+plot(t_out, M_mag_out(:, 1), LineWidth=2)
+plot(t_out, M_mag_out(:, 2),LineWidth=2)
+plot(t_out, M_mag_out(:, 3),LineWidth=2)
+plot(t_out, sqrt(M_mag_out(:, 1).^2 + M_mag_out(:, 2).^2 + M_mag_out(:, 3).^2), LineWidth=2)
+M_mag_max = 2*0.000154100322136014*(6378^3)*(3.08e-5)/((7.0049e3)^3)
+yline(M_mag_max,'--k','LineWidth',2)
+yline(-M_mag_max,'--k','LineWidth',2)
+xlabel('t [s]')
+ylabel('Magnetic Torque [Nm]')
+legend('M_x', 'M_y', 'M_z', 'M_{tot}','M_{max}')
+title('Magnetic torque over time (one orbit)')
+
+% Verify SRP torque
+figure()
+hold on;
+plot(t_out, M_SRP_out(:, 1), LineWidth=2)
+plot(t_out, M_SRP_out(:, 2),LineWidth=2)
+plot(t_out, M_SRP_out(:, 3),LineWidth=2)
+plot(t_out, sqrt(M_SRP_out(:, 1).^2 + M_SRP_out(:, 2).^2 + M_SRP_out(:, 3).^2), LineWidth=2)
+M_SRP_max = (1358/(3e8))*((8660.25+9139.44+6*6908.59)/(100^2))*(1+0.85)*(15/100)
+yline(M_SRP_max,'--k','LineWidth',2)
+xlabel('t [s]')
+ylabel('Solar Radiation Pressure Torque [Nm]')
+legend('M_x', 'M_y', 'M_z', 'M_{tot}','M_{max}')
+title('SRP torque over time (one orbit)')
+
+% Verify Aero torque
+figure()
+hold on;
+plot(t_out, M_aero_out(:, 1), LineWidth=2)
+plot(t_out, M_aero_out(:, 2),LineWidth=2)
+plot(t_out, M_aero_out(:, 3),LineWidth=2)
+plot(t_out, sqrt(M_aero_out(:, 1).^2 + M_aero_out(:, 2).^2 + M_aero_out(:, 3).^2), LineWidth=2)
+M_aero_max = 0.5*1.454e-13*((7.5634e3)^2)*1.28*((8660.25+9139.44+6*6908.59)/(100^2))*(15/100)
+yline(M_aero_max,'--k','LineWidth',2)
+xlabel('t [s]')
+ylabel('Aerodynamic Torque [Nm]')
+legend('M_x', 'M_y', 'M_z', 'M_{tot}','M_{max}')
+title('Aerodynamic torque over time (one orbit)')
+
+% All torques
+figure()
+hold on;
+plot(t_out, sqrt(M_mag_out(:, 1).^2 + M_mag_out(:, 2).^2 + M_mag_out(:, 3).^2), LineWidth=2)
+plot(t_out, sqrt(M_SRP_out(:, 1).^2 + M_SRP_out(:, 2).^2 + M_SRP_out(:, 3).^2), LineWidth=2)
+plot(t_out, sqrt(M_aero_out(:, 1).^2 + M_aero_out(:, 2).^2 + M_aero_out(:, 3).^2), LineWidth=2)
+plot(t_out, sqrt(M_grav_out(:, 1).^2 + M_grav_out(:, 2).^2 + M_grav_out(:, 3).^2), LineWidth=2)
+xlabel('t [s]')
+ylabel('Torque [Nm]')
+legend('M_{mag}', 'M_{SRP}', 'M_{aero}', 'M_{grav}')
+title('All torques over time (one orbit)')
+
+% Resultant torques
+figure()
+hold on;
+plot(t_out, M_ALL_out, LineWidth=2)
+xlabel('t [s]')
+ylabel('Torque [Nm]')
+legend('M_x', 'M_y', 'M_z')
+title('Resultant total torque over time (one orbit)')
