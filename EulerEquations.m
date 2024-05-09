@@ -8,16 +8,15 @@ close all;
 %%
 [R_princ,inertia_p] = inertia(); %inertia in principal axes
 
-%inertia_p = diag([100, 85, 110]); %unstable pitch - even when unperturbed
-%it diverges bc of eccentricity
+%inertia_p = diag([100, 85, 110]); %unstable pitch
 %inertia_p = diag([120, 85, 60]); %unstable in all
 %inertia_p = diag([60, 150, 120]); %unstable roll yaw
-%inertia_p = diag([100, 120, 60]); %unstable roll yaw what is happening???
+
 
 %Initial conditions
 [state_ECI_init, T_orbit, n] = OrbitPropagation();
 %omega_init = R_princ * [0.0001; 0.0001; 0.1];
-omega_init =[0.0*n; 0.00*n; 1.01*n];
+omega_init =[0.01*n; 0.01*n; 1.01*n];
 
 %IC based on EULER angle
 % att_init = [-pi/2, 0, 0]; %313
@@ -32,9 +31,9 @@ DCM_initial = Rot;
 
 
 %Integration settings
-absTol= 1e-10;
-relTol = 1e-6;
-tstart = 0; tend = 10*T_orbit;
+absTol= 1e-12;
+relTol = 1e-10;
+tstart = 0; tend = 1*T_orbit;
 
 %% Simulate
 out = sim("main");
