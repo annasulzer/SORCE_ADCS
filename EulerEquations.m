@@ -32,9 +32,9 @@ Rot2 = roty(-att_init(1))*rotx(-att_init(2))*rotz(-att_init(3));
 [R, T, N] = RTN_frame_inertial(state_ECI_init');
 Rot = [R',T', N']';
 
-DCM_initial = Rot;
-%DCM_initial = R_princ' * Rot * Rot2;
-
+%DCM_initial = Rot;
+%DCM_initial = R_princ * Rot * Rot2;
+DCM_initial = target_DCM; %run ControlErrors.m first
 %Integration settings
 absTol= 1e-10;
 relTol = 1e-6;
