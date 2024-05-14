@@ -66,6 +66,10 @@ M_SRP_out = out.M_SRP.Data(:,:)';
 M_aero_out = out.M_aero.Data(:,:)';
 M_ALL_out = out.M_ALL.Data(:,:)';
 
+%State Estimation
+DCM_estimated_det_out = out.DCM_estimated_det.Data;
+
+
 %% Get different coordinate frames with respect to inertial frame
 Rot = DCM_out;
 [Xp, Yp, Zp, Xb, Yb, Zb] = principal_body_frame_inertial(Rot, R_princ);
