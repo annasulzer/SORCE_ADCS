@@ -25,20 +25,34 @@ UT1 = [1,25,2004,00];
 theta = UT1_to_theta(UT1);
 
 %IC based on EULER angle
-att_init = [-pi/2, 0, 0]; %313
-Rot2 = roty(-att_init(1))*rotx(-att_init(2))*rotz(-att_init(3));
+% att_init = [-pi/2, 0, 0]; %313
+% Rot2 = roty(-att_init(1))*rotx(-att_init(2))*rotz(-att_init(3));
+% 
+% %IC aligned with RTN frame
+% [R, T, N] = RTN_frame_inertial(state_ECI_init');
+% Rot = [R',T', N']';
 
-%IC aligned with RTN frame
-[R, T, N] = RTN_frame_inertial(state_ECI_init');
-Rot = [R',T', N']';
 
-%DCM_initial = Rot;
-%DCM_initial = R_princ * Rot * Rot2;
-DCM_initial = target_DCM; %run ControlErrors.m first
+
+% alpha = 45; %azimuth from x-axis sun
+% beta = 10; %elevation sun
+% r_sun_norm = [cosd(alpha)*cosd(beta); sind(alpha)*cosd(beta); sind(beta)]; %target for body z-axis
+% 
+% %define that body x-axis will be in plane with body z-axis and r_sun
+% %(perpendicular on r_sun)
+% target_x_body = [-cosd(alpha)*sind(beta); -sind(alpha)*sind(beta); cosd(beta)];
+% disp(dot(r_sun_norm, target_x_body)) %check that they are perependicular
+% 
+% target_DCM = eye(3); %target DCM in principal frame
+% target_DCM(1:3, 1) =  R_princ * target_x_body; %target attitude x-component principal frame
+% target_DCM(1:3, 2) =  R_princ * cross(r_sun_norm, target_x_body); %target attitude y-component principal frame
+% target_DCM(1:3, 3) =  R_princ * r_sun_norm; %target attitude z-component principal frame
+% DCM_initial = target_DCM;
+
+DCM_initial = targetDCM([26321453.5527815,	-132781955.130633,	-57571626.5531097]', R_princ); %rinitial state sun
 %Integration settings
 absTol= 1e-10;
 relTol = 1e-6;
-%time = 2*pi/norm(omega_init);
 tstart = 0; tend = T_orbit;
 
 %% Simulate
@@ -428,37 +442,44 @@ plot(t_out, rad2deg(euler_out(:, 3)),'Linestyle', '--', 'Color','blue', 'LineWid
 xlabel('t [s]')
 ylabel('\psi [deg]')
 legend('Deterministic Attitude Determination', 'True Euler Angles')
-%%
-quatdcm = DCM_out;
-%Statistical Quaternions over time;
-for i = 1:79
-    quatdcm(:, :, i) = quat2dcm([quat_estimated_Q_out(i, 4), quat_estimated_Q_out(i, 1:3)]);
+
+%% sign match quaternions
+for i = 1:length(quat_out)
+    if(sign(quat_out(i, 4)) ~= sign(quat_estimated_Q_out(i, 4)))
+        quat_estimated_Q_out(i, :) = - quat_estimated_Q_out(i, :);
+    end
 end
-quat_estimated_Q_out2 = DCMseries2eulerseries(quatdcm);
-%%
+
+%% Statistical
 figure()
-subplot(3,1,1)
+subplot(4,1,1)
 hold on;
-plot(t_out, rad2deg(quat_estimated_Q_out2(:, 1)), 'red', 'LineWidth',2)
-plot(t_out, rad2deg(euler_out(:, 1)),'Linestyle', '--', 'Color','blue', 'LineWidth',2)
+plot(t_out, (quat_estimated_Q_out(:, 1)), 'red', 'LineWidth',2)
+plot(t_out, (quat_out(:, 1)),'Linestyle', '--', 'Color','blue', 'LineWidth',2)
 xlabel('t [s]')
-ylabel('\phi [deg]')
-title('Statistical Attitude Determination: Euler angles over time (213 sequence)')
-subplot(3,1,2)
+ylabel('q1')
+title('Quaternions estimated from statistical attitude determination')
+subplot(4,1,2)
 hold on;
-plot(t_out, rad2deg(quat_estimated_Q_out2(:, 2)), 'red',  'LineWidth',2)
-plot(t_out, rad2deg(euler_out(:, 2)), 'Linestyle', '--', 'Color','blue', 'LineWidth',2)
+plot(t_out, (quat_estimated_Q_out(:, 2)), 'red',  'LineWidth',2)
+plot(t_out, (quat_out(:, 2)), 'Linestyle', '--', 'Color','blue', 'LineWidth',2)
 xlabel('t [s]')
-ylabel('\theta [deg]')
-subplot(3,1,3)
+ylabel('q2')
+subplot(4,1,3)
 hold on;
-plot(t_out, rad2deg(quat_estimated_Q_out2(:, 3)),'Color', 'red', 'LineWidth',2)
-plot(t_out, rad2deg(euler_out(:, 3)),'Linestyle', '--', 'Color','blue', 'LineWidth',2)
+plot(t_out, (quat_estimated_Q_out(:, 3)),'Color', 'red', 'LineWidth',2)
+plot(t_out, (quat_out(:, 3)),'Linestyle', '--', 'Color','blue', 'LineWidth',2)
 xlabel('t [s]')
-ylabel('\psi [deg]')
-legend('Statistical Attitude Determination', 'True Euler Angles')
+ylabel('q3')
+subplot(4,1,4)
+hold on;
+plot(t_out, (quat_estimated_Q_out(:, 4)),'Color', 'red', 'LineWidth',2)
+plot(t_out, (quat_out(:, 4)),'Linestyle', '--', 'Color','blue', 'LineWidth',2)
+xlabel('t [s]')
+ylabel('q4')
+legend('Estimated Quaternions', 'True Quaternions')
 
-
+%% Kinematic Estimation
 figure()
 subplot(4,1,1)
 hold on;
