@@ -21,25 +21,18 @@ target_DCM(1:3, 3) =  R_princ * r_sun_norm; %target attitude z-component princip
 %%%%%%%%%%%%%%%%%Simulate with Euler Equations %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Calculate Errors
 DCM_error = DCM_out;
-euler_error = zeros(length(DCM_out(1,1,:)), 3);
 for i = 1:length(DCM_out)
     DCM_error(:, :, i) = target_DCM * DCM_out(:, :, i)';
-    %get euler angles 213
-    euler_error(i, 1) = atan2(-DCM_error(1, 3, i), DCM_error(3, 3, i));
-    euler_error(i, 2) = asin(DCM_error(2, 3, i));
-    euler_error(i, 3) = atan2(-DCM_error(2, 1, i), DCM_error(2, 2, i));
 end
+euler_error = DCMseries2eulerseries(DCM_error);
 
 %Validate
-alignment_error = zeros(length(DCM_out(1,1,:)), 3);
+DCM_alignment_error = DCM_out;
 for i = 1:length(DCM_out)
-    DCM_alignment_error = DCM_error(:, :, i) * DCM_out(:, :, i);
-    %get euler angles 213
-    alignment_error(i, 1) = atan2(-DCM_alignment_error(1, 3), DCM_alignment_error(3, 3));
-    alignment_error(i, 2) = asin(DCM_alignment_error(2, 3));
-    alignment_error(i, 3) = atan2(-DCM_alignment_error(2, 1), DCM_alignment_error(2, 2));
+    DCM_alignment_error(:, :, i) = DCM_error(:, :, i) * DCM_out(:, :, i);
 end
 
+alignment_error = DCMseries2eulerseries(DCM_alignment_error);
 %% Plot
 %Euler Angles Errors over time
 figure()
