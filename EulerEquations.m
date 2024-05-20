@@ -19,13 +19,18 @@ close all;
 %Initial conditions
 [state_ECI_init, T_orbit, n] = OrbitPropagation();
 % omega_init = R_princ * [n; 0; 0];
-omega_init = [0; 0; 0];
+omega_init = [0; 0; 0.01];
 
+% Sun IC
 UT1 = [1,25,2004,00];
+JD_init = 2453029.5;
+MJD_init = JD_init - 2400000.5;
+
+D_init = JD_init - 2451545.0;
 theta = UT1_to_theta(UT1);
 
 %IC based on EULER angle
-att_init = [-pi/2, 0, 0]; %313
+att_init = [0, 0, 0]; %313
 Rot2 = roty(-att_init(1))*rotx(-att_init(2))*rotz(-att_init(3));
 
 %IC aligned with RTN frame
@@ -33,9 +38,10 @@ Rot2 = roty(-att_init(1))*rotx(-att_init(2))*rotz(-att_init(3));
 Rot = [R',T', N']';
 
 DCM_initial = Rot;
-%DCM_initial = R_princ' * Rot * Rot2;
+DCM_initial = R_princ' * Rot * Rot2;
 
 %Integration settings
+eps = 1e-10;
 absTol= 1e-10;
 relTol = 1e-6;
 %time = 2*pi/norm(omega_init);
@@ -65,6 +71,13 @@ M_mag_out = out.M_mag.Data(:,:)';
 M_SRP_out = out.M_SRP.Data(:,:)';
 M_aero_out = out.M_aero.Data(:,:)';
 M_ALL_out = out.M_ALL.Data(:,:)';
+
+
+eclipse_condition = out.eclipse.Data();
+%% check for eclipse condition
+ind = find(eclipse_condition == 1);
+disp((t_out(ind(end)) - t_out(ind(1)))/60)
+disp((t_out(ind(end)) - t_out(ind(1)))/T_orbit)
 
 %% Get different coordinate frames with respect to inertial frame
 Rot = DCM_out;
@@ -355,7 +368,7 @@ plot(t_out, M_SRP_out(:, 2),LineWidth=2)
 plot(t_out, M_SRP_out(:, 3),LineWidth=2)
 plot(t_out, sqrt(M_SRP_out(:, 1).^2 + M_SRP_out(:, 2).^2 + M_SRP_out(:, 3).^2), LineWidth=2)
 M_SRP_max = (1358/(3e8))*((8660.25+9139.44+6*6908.59)/(100^2))*(1+0.85)*(15/100)
-yline(M_SRP_max,'--k','LineWidth',2)
+% yline(M_SRP_max,'--k','LineWidth',2)
 xlabel('t [s]')
 ylabel('Solar Radiation Pressure Torque [Nm]')
 legend('M_x', 'M_y', 'M_z', 'M_{tot}','M_{max}')
@@ -368,8 +381,8 @@ plot(t_out, M_aero_out(:, 1), LineWidth=2)
 plot(t_out, M_aero_out(:, 2),LineWidth=2)
 plot(t_out, M_aero_out(:, 3),LineWidth=2)
 plot(t_out, sqrt(M_aero_out(:, 1).^2 + M_aero_out(:, 2).^2 + M_aero_out(:, 3).^2), LineWidth=2)
-M_aero_max = 0.5*1.454e-13*((7.5634e3)^2)*1.28*((8660.25+9139.44+6*6908.59)/(100^2))*(15/100)
-yline(M_aero_max,'--k','LineWidth',2)
+M_aero_max = 0.5*7e-14*((7.5634e3)^2)*1.28*((8660.25+9139.44+6*6908.59)/(100^2))*(15/100)
+% yline(M_aero_max,'--k','LineWidth',2)
 xlabel('t [s]')
 ylabel('Aerodynamic Torque [Nm]')
 legend('M_x', 'M_y', 'M_z', 'M_{tot}','M_{max}')

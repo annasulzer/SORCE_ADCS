@@ -2,7 +2,6 @@
 %  Anna Sulzer & Ethan Anzia
 %  AA279C PSET2
 
-
 %orbit elements of sun around Earth
 %(https://www.karhukoti.com/SunKep#google_vignette)
 function [t0_MJD, a, Om, e, om, i, M0, n] = initialConditions_sun()
