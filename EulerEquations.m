@@ -19,7 +19,7 @@ close all;
 %Initial conditions
 [state_ECI_init, T_orbit, n] = OrbitPropagation();
 % omega_init = R_princ * [n; 0; 0];
-omega_init = [0; 0; 0.01];
+omega_init = [0; 0; 0.0];
 
 % Sun IC
 UT1 = [1,25,2004,00];
@@ -57,7 +57,7 @@ t_out = out.tout;
 omega_out = out.omega.Data(:,:)';
 L_out = (inertia_p * omega_out')';
 Meas_sun = out.simout.Data(:,:)';
-out2 = out.simout1.Data(:,:)';
+
 %attitude representation SWITCH
 quat_out = out.quaternions.Data(:, :)';
 euler_out = out.euler.Data(:, :)';
@@ -82,14 +82,17 @@ quat_estimated_kin_out = out.quat_estimated_kin.Data(:, :)';
 
 
 eclipse_condition = out.eclipse.Data();
-%%
+%% check that norm of one is still given
 figure()
-x = zeros(length(Meas_sun));
+x = zeros(length(Meas_sun), 3);
+y = zeros(length(Meas_sun), 3);
 hold on;
 for i = 1:length(Meas_sun)
-    x(i) = norm(Meas_sun(i, :));
+    x(i, :) = (Meas_sun(i, :));
+    y(i, :) = state_sun_out(i, 1:3)./norm(state_sun_out(i, :));
 end
-plot(t_out, x)
+plot(t_out, x(:, 1))
+plot(t_out, y(:, 1))
 %% check for eclipse condition
 ind = find(eclipse_condition == 1);
 disp((t_out(ind(end)) - t_out(ind(1)))/60)
