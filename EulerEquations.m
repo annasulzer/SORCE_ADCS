@@ -56,8 +56,8 @@ out = sim("main");
 t_out = out.tout;
 omega_out = out.omega.Data(:,:)';
 L_out = (inertia_p * omega_out')';
-Meas_sun = out.simout.Data(:,:)';
-Meas_sunV = out.simout1.Data(:,:)';
+Meas_sun = out.simout.Data(1:3,:)';
+Meas_sunV = out.simout1.Data(1:3,:)';
 
 %attitude representation SWITCH
 quat_out = out.quaternions.Data(:, :)';
@@ -90,10 +90,18 @@ y = zeros(length(Meas_sun), 3);
 hold on;
 for i = 1:length(Meas_sun)
     x(i, :) = (Meas_sun(i, :));
-    y(i, :) = DCM_out(:,:,i)*(state_sun_out(i, 1:3)./norm(state_sun_out(i, 1:3)))';
+    y(i, :) = DCM_out(:,:,i)*Meas_sunV(i, :)';
 end
+plot(t_out, x(:, 1))
+plot(t_out, y(:, 1), LineWidth=2)
+plot(t_out, x(:, 2))
+plot(t_out, y(:, 2), LineWidth=2)
 plot(t_out, x(:, 3))
-plot(t_out, y(:, 3),'--')
+plot(t_out, y(:, 3), LineWidth=2)
+legend('Noisy x', 'Actual x','Noisy y', 'Actual y','Noisy z', 'Actual z')
+title('Magnetic Field Vector Components noisy vs actual (principal frame)')
+xlabel('time [s]')
+ylabel('Vector components')
 %% check for eclipse condition
 ind = find(eclipse_condition == 1);
 disp((t_out(ind(end)) - t_out(ind(1)))/60)
