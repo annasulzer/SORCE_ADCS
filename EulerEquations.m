@@ -57,6 +57,7 @@ t_out = out.tout;
 omega_out = out.omega.Data(:,:)';
 L_out = (inertia_p * omega_out')';
 Meas_sun = out.simout.Data(:,:)';
+Meas_sunV = out.simout1.Data(:,:)';
 
 %attitude representation SWITCH
 quat_out = out.quaternions.Data(:, :)';
@@ -89,10 +90,10 @@ y = zeros(length(Meas_sun), 3);
 hold on;
 for i = 1:length(Meas_sun)
     x(i, :) = (Meas_sun(i, :));
-    y(i, :) = state_sun_out(i, 1:3)./norm(state_sun_out(i, :));
+    y(i, :) = DCM_out(:,:,i)*(state_sun_out(i, 1:3)./norm(state_sun_out(i, 1:3)))';
 end
-plot(t_out, x(:, 1))
-plot(t_out, y(:, 1))
+plot(t_out, x(:, 3))
+plot(t_out, y(:, 3),'--')
 %% check for eclipse condition
 ind = find(eclipse_condition == 1);
 disp((t_out(ind(end)) - t_out(ind(1)))/60)
