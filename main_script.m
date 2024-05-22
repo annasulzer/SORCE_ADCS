@@ -76,6 +76,7 @@ EKF_P_post_min = out.EKF_P_post_min.Data;
 EKF_x_post_min = out.EKF_x_post_min.Data(:,:)';
 
 eclipse_condition = out.eclipse.Data();
+
 %% check that noise 
 figure()
 x = zeros(length(Meas_sun), 3);
@@ -381,31 +382,56 @@ ylabel('\Delta\psi [deg]')
 %     DCM_estimated_EKF(:,:,i) = quat2dcm([EKF_x_post_min(i, 7), EKF_x_post_min(i, 4:6)]);
 % end
 % euler_error_estimated_Q = DCMseries2eulerseries(DCM_error_Q_estimated);
-
+t = tstart:0.1:tend;
 figure()
 subplot(4,1,1)
 hold on;
-plot(t_out, (EKF_x_post_min(:, 4)), 'red', 'LineWidth',2)
+plot(t, (EKF_x_post_min(:, 4)), 'red', 'LineWidth',2)
 plot(t_out, (quat_out(:, 1)),'Linestyle', '--', 'Color','blue', 'LineWidth',2)
 xlabel('t [s]')
 ylabel('q1')
 title('Quaternions estimated from kinematic equations')
 subplot(4,1,2)
 hold on;
-plot(t_out, (EKF_x_post_min(:, 5)), 'red',  'LineWidth',2)
+plot(t, (EKF_x_post_min(:, 5)), 'red',  'LineWidth',2)
 plot(t_out, (quat_out(:, 2)), 'Linestyle', '--', 'Color','blue', 'LineWidth',2)
 xlabel('t [s]')
 ylabel('q2')
 subplot(4,1,3)
 hold on;
-plot(t_out, (EKF_x_post_min(:, 6)),'Color', 'red', 'LineWidth',2)
+plot(t, (EKF_x_post_min(:, 6)),'Color', 'red', 'LineWidth',2)
 plot(t_out, (quat_out(:, 3)),'Linestyle', '--', 'Color','blue', 'LineWidth',2)
 xlabel('t [s]')
 ylabel('q3')
 subplot(4,1,4)
 hold on;
-plot(t_out, (EKF_x_post_min(:, 7)),'Color', 'red', 'LineWidth',2)
+plot(t, (EKF_x_post_min(:, 7)),'Color', 'red', 'LineWidth',2)
 plot(t_out, (quat_out(:, 4)),'Linestyle', '--', 'Color','blue', 'LineWidth',2)
 xlabel('t [s]')
 ylabel('q4')
 legend('Estimated Quaternions', 'True Quaternions')
+%%
+% Plot over time
+figure()
+subplot(3,1,1)
+plot(t, EKF_x_post_min(:, 1),'Color', 'red', 'LineWidth',2)
+hold on;
+plot(t_out, omega_out(:, 1), 'Linestyle', '--', 'Color','blue', 'LineWidth',2)
+xlabel('t [s]')
+ylabel('\omega_x [rad/s]')
+title('Angular Velocity over time from the EKF VS true state')
+subplot(3,1,2)
+plot(t, EKF_x_post_min(:, 2),'Color', 'red', 'LineWidth',2)
+hold on;
+plot(t_out, omega_out(:, 2), 'Linestyle', '--', 'Color','blue', 'LineWidth',2)
+
+xlabel('t [s]')
+ylabel('\omega_y [rad/s]')
+subplot(3,1,3)
+plot(t, EKF_x_post_min(:, 3),'Color', 'red', 'LineWidth',2)
+hold on;
+plot(t_out, omega_out(:, 3), 'Linestyle', '--', 'Color','blue', 'LineWidth',2)
+
+xlabel('t [s]')
+ylabel('\omega_z [rad/s]')
+legend('Estimated Omega', 'True Omega')
