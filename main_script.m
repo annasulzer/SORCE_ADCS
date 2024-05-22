@@ -12,9 +12,7 @@ close all;
 [state_ECI_init, T_orbit, n] = OrbitPropagation();
 [t0_MJD_sun, a_sun, Om_sun, e_sun, om_sun, i_sun, M0_sun, n_sun] = OrbitPropagation_Sun();
 
-%Initial conditions
-[state_ECI_init, T_orbit, n] = OrbitPropagation();
-omega_init = [0; 0; 0.0];
+
 
 % Sun IC
 UT1 = [1,25,2004,00];
@@ -24,8 +22,15 @@ MJD_init = JD_init - 2400000.5;
 D_init = JD_init - 2451545.0;
 theta = UT1_to_theta(UT1);
 
+% EKF
+%x0 = 
+%P0 = eye(7);
 
+%Initial conditions
+[state_ECI_init, T_orbit, n] = OrbitPropagation();
+omega_init = [0; 0; 0.0];
 DCM_initial = targetDCM([26321453.5527815,	-132781955.130633,	-57571626.5531097]', R_princ); %rinitial state sun
+
 
 %Integration settings
 eps = 1e-10;
@@ -65,6 +70,9 @@ DCM_estimated_det_out = out.DCM_estimated_det.Data;
 quat_estimated_Q_out = out.quat_estimated_Q.Data(:, :)';
 quat_estimated_kin_out = out.quat_estimated_kin.Data(:, :)';
 
+% EKF
+%EKF_P_post_min = out.EKF_P_post_min.Data(:,:)';
+%EKF_x_post_min = out.EKF_x_post_min.Data(:,:)';
 
 eclipse_condition = out.eclipse.Data();
 %% check that noise 
@@ -310,4 +318,7 @@ function DCM = small_angle_DCM(angles)
     az = angles(3);
     DCM = [1, az, -ay; -az, 1, ax; ay, -ax, 1]; 
 end
+
+
+%% EKF
 
