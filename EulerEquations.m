@@ -267,9 +267,9 @@ Rot = DCM_out;
 % xlabel('t [s]')
 % ylabel('L_z [kg*m^2/s]')
 % legend('Euler Angles', 'Quaternions')
-% 
+% % 
 % %%
-% % Plot Omega over time
+% Plot Omega over time
 % figure()
 % subplot(3,1,1)
 % hold on;
@@ -467,7 +467,7 @@ ylabel('\psi [deg]')
 legend('Deterministic Attitude Determination', 'True Euler Angles')
 %% sign match quaternions
 for i = 1:length(quat_out)
-    if(sign(quat_out(i, 4)) ~= sign(quat_estimated_Q_out(i, 4)))
+    if(sign(quat_out(i, 1)) ~= sign(quat_estimated_Q_out(i, 1)))
         quat_estimated_Q_out(i, :) = - quat_estimated_Q_out(i, :);
     end
 end
@@ -564,7 +564,7 @@ ylabel('\Delta\psi [deg]')
 %% Q method
 DCM_error_Q_estimated = DCM_out;
 for i = 1:length(DCM_out)
-    DCM_estimated_Q = quat2dcm([quat_estimated_Q_out(i, 4), quat_estimated_kin_out(i, 1:3)]);
+    DCM_estimated_Q = quat2dcm([quat_estimated_Q_out(i, 4), quat_estimated_Q_out(i, 1:3)]);
     DCM_error_Q_estimated(:, :, i) = DCM_out(:,:,i) * DCM_estimated_Q';
 end
 euler_error_estimated_Q = DCMseries2eulerseries(DCM_error_Q_estimated);
