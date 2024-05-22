@@ -529,3 +529,61 @@ plot(t_out, (quat_out(:, 4)),'Linestyle', '--', 'Color','blue', 'LineWidth',2)
 xlabel('t [s]')
 ylabel('q4')
 legend('Estimated Quaternions', 'True Quaternions')
+
+
+
+
+%% PSET7 Plotting
+%% Deterministic
+DCM_error_det_estimated = DCM_out;
+for i = 1:length(DCM_out)
+    DCM_estimated_det = eul2rotm(euler_est_det(i, :),'YXZ');
+    DCM_error_det_estimated(:, :, i) = DCM_out(:,:,i) * DCM_estimated_det';
+    %disp(DCM_error_det_estimated(:,:,i))
+end
+euler_error_estimated_det = DCMseries2eulerseries(DCM_error_det_estimated);
+
+%Euler Angles Errors over time
+figure()
+subplot(3,1,1)
+hold on;
+plot(t_out, rad2deg(euler_error_estimated_det(:, 1)), 'blue')
+xlabel('t [s]')
+ylabel('\Delta\phi [deg]')
+title('Euler angles over time (213 sequence)')
+subplot(3,1,2)
+hold on;
+plot(t_out, rad2deg(euler_error_estimated_det(:, 2)), 'blue')
+xlabel('t [s]')
+ylabel('\Delta\theta [deg]')
+subplot(3,1,3)
+hold on;
+plot(t_out, rad2deg(euler_error_estimated_det(:, 3)), 'blue')
+xlabel('t [s]')
+ylabel('\Delta\psi [deg]')
+%% Q method
+DCM_error_Q_estimated = DCM_out;
+for i = 1:length(DCM_out)
+    DCM_estimated_Q = quat2dcm([quat_estimated_Q_out(i, 4), quat_estimated_kin_out(i, 1:3)]);
+    DCM_error_Q_estimated(:, :, i) = DCM_out(:,:,i) * DCM_estimated_Q';
+end
+euler_error_estimated_Q = DCMseries2eulerseries(DCM_error_Q_estimated);
+
+%Euler Angles Errors over time
+figure()
+subplot(3,1,1)
+hold on;
+plot(t_out, rad2deg(euler_error_estimated_Q(:, 1)), 'blue')
+xlabel('t [s]')
+ylabel('\Delta\phi [deg]')
+title('Euler angles over time (213 sequence)')
+subplot(3,1,2)
+hold on;
+plot(t_out, rad2deg(euler_error_estimated_Q(:, 2)), 'blue')
+xlabel('t [s]')
+ylabel('\Delta\theta [deg]')
+subplot(3,1,3)
+hold on;
+plot(t_out, rad2deg(euler_error_estimated_Q(:, 3)), 'blue')
+xlabel('t [s]')
+ylabel('\Delta\psi [deg]')
