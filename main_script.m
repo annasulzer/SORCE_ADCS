@@ -23,12 +23,12 @@ D_init = JD_init - 2451545.0;
 theta = UT1_to_theta(UT1);
 
 % EKF
-EKF_x0 =[0,0.0,0.001,0.1,0.1,0.1,0.9849];
+EKF_x0 =[0,0.0,0.01,0.1,0.1,0.1,0.9849];
 EKF_P0 = eye(7);
 
 %Initial conditions
 [state_ECI_init, T_orbit, n] = OrbitPropagation();
-omega_init = [0; 0; 0.0];
+omega_init = [0; 0; 0.01];
 DCM_initial = targetDCM([26321453.5527815,	-132781955.130633,	-57571626.5531097]', R_princ); %rinitial state sun
 
 
@@ -72,7 +72,7 @@ quat_estimated_Q_out = out.quat_estimated_Q.Data(:, :)';
 quat_estimated_kin_out = out.quat_estimated_kin.Data(:, :)';
 
 % EKF
-EKF_P_post_min = out.EKF_P_post_min.Data(:,:)';
+EKF_P_post_min = out.EKF_P_post_min.Data;
 EKF_x_post_min = out.EKF_x_post_min.Data(:,:)';
 
 eclipse_condition = out.eclipse.Data();
@@ -367,13 +367,45 @@ plot(t_out, rad2deg(euler_error_estimated_kin_small_angle(:, 3)), 'blue')
 xlabel('t [s]')
 ylabel('\Delta\psi [deg]')
 
-function DCM = small_angle_DCM(angles)
-    ay = angles(1);%phi
-    ax = angles(2); %theta
-    az = angles(3);
-    DCM = [1, az, -ay; -az, 1, ax; ay, -ax, 1]; 
-end
+% function DCM = small_angle_DCM(angles)
+%     ay = angles(1);%phi
+%     ax = angles(2); %theta
+%     az = angles(3);
+%     DCM = [1, az, -ay; -az, 1, ax; ay, -ax, 1]; 
+% end
 
 
 %% EKF
+% DCM_estimated_EKF = DCM_out;
+% for i = 1:length(DCM_out)
+%     DCM_estimated_EKF(:,:,i) = quat2dcm([EKF_x_post_min(i, 7), EKF_x_post_min(i, 4:6)]);
+% end
+% euler_error_estimated_Q = DCMseries2eulerseries(DCM_error_Q_estimated);
 
+figure()
+subplot(4,1,1)
+hold on;
+plot(t_out, (EKF_x_post_min(:, 4)), 'red', 'LineWidth',2)
+plot(t_out, (quat_out(:, 1)),'Linestyle', '--', 'Color','blue', 'LineWidth',2)
+xlabel('t [s]')
+ylabel('q1')
+title('Quaternions estimated from kinematic equations')
+subplot(4,1,2)
+hold on;
+plot(t_out, (EKF_x_post_min(:, 5)), 'red',  'LineWidth',2)
+plot(t_out, (quat_out(:, 2)), 'Linestyle', '--', 'Color','blue', 'LineWidth',2)
+xlabel('t [s]')
+ylabel('q2')
+subplot(4,1,3)
+hold on;
+plot(t_out, (EKF_x_post_min(:, 6)),'Color', 'red', 'LineWidth',2)
+plot(t_out, (quat_out(:, 3)),'Linestyle', '--', 'Color','blue', 'LineWidth',2)
+xlabel('t [s]')
+ylabel('q3')
+subplot(4,1,4)
+hold on;
+plot(t_out, (EKF_x_post_min(:, 7)),'Color', 'red', 'LineWidth',2)
+plot(t_out, (quat_out(:, 4)),'Linestyle', '--', 'Color','blue', 'LineWidth',2)
+xlabel('t [s]')
+ylabel('q4')
+legend('Estimated Quaternions', 'True Quaternions')
