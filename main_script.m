@@ -23,7 +23,7 @@ D_init = JD_init - 2451545.0;
 theta = UT1_to_theta(UT1);
 
 % EKF
-EKF_x0 =[0,0,0,0,0,0,0];
+EKF_x0 =[0,0.0,0.001,0.1,0.1,0.1,0.9849];
 EKF_P0 = eye(7);
 
 %Initial conditions
@@ -37,6 +37,7 @@ eps = 1e-10;
 absTol= 1e-10;
 relTol = 1e-6;
 tstart = 0; tend = T_orbit;
+
 
 %% Simulate
 out = sim("main");
