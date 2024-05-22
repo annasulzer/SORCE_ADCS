@@ -23,8 +23,8 @@ D_init = JD_init - 2451545.0;
 theta = UT1_to_theta(UT1);
 
 % EKF
-%x0 = 
-%P0 = eye(7);
+EKF_x0 =[0,0,0,0,0,0,0];
+EKF_P0 = eye(7);
 
 %Initial conditions
 [state_ECI_init, T_orbit, n] = OrbitPropagation();
@@ -71,8 +71,8 @@ quat_estimated_Q_out = out.quat_estimated_Q.Data(:, :)';
 quat_estimated_kin_out = out.quat_estimated_kin.Data(:, :)';
 
 % EKF
-%EKF_P_post_min = out.EKF_P_post_min.Data(:,:)';
-%EKF_x_post_min = out.EKF_x_post_min.Data(:,:)';
+EKF_P_post_min = out.EKF_P_post_min.Data(:,:)';
+EKF_x_post_min = out.EKF_x_post_min.Data(:,:)';
 
 eclipse_condition = out.eclipse.Data();
 %% check that noise 
@@ -252,12 +252,41 @@ plot(t_out, rad2deg(euler_error_estimated_Q(:, 3)), 'blue')
 xlabel('t [s]')
 ylabel('\Delta\psi [deg]')
 
+%% Kinematic
+DCM_error_kin_estimated = zeros(3,3,length(DCM_out));
+DCM_estimated_kin = DCM_out;
+for i = 1:length(DCM_out)
+    DCM_estimated_kin(:,:,i) = quat2dcm([quat_estimated_kin_out(i, 4), quat_estimated_kin_out(i, 1:3)]);
+    DCM_error_kin_estimated(:, :, i) = DCM_out(:,:,i) * DCM_estimated_kin(:,:,i)';
+end
+euler_error_estimated_kin = DCMseries2eulerseries(DCM_error_kin_estimated);
+
+%Euler Angles Errors over time
+figure()
+subplot(3,1,1)
+hold on;
+plot(t_out, rad2deg(euler_error_estimated_kin(:, 1)), 'blue')
+xlabel('t [s]')
+ylabel('\Delta\phi [deg]')
+title('Error in Euler Angles for Kinematic Attitude Determination')
+subplot(3,1,2)
+hold on;
+plot(t_out, rad2deg(euler_error_estimated_kin(:, 2)), 'blue')
+xlabel('t [s]')
+ylabel('\Delta\theta [deg]')
+subplot(3,1,3)
+hold on;
+plot(t_out, rad2deg(euler_error_estimated_kin(:, 3)), 'blue')
+xlabel('t [s]')
+ylabel('\Delta\psi [deg]')
 
 %% small Angles and mean/cov
 V_det = var(rad2deg(euler_error_estimated_det));
 mean_det = mean(rad2deg(euler_error_estimated_det));
 V_Q = var(rad2deg(euler_error_estimated_Q));
 mean_Q = mean(rad2deg(euler_error_estimated_Q));
+V_kin = var(rad2deg(euler_error_estimated_kin));
+mean_kin = mean(rad2deg(euler_error_estimated_kin));
 
 
 DCM_error_Q_estimated_smallAngles = zeros(3,3,length(DCM_out));
@@ -311,6 +340,31 @@ plot(t_out, rad2deg(euler_error_estimated_det_small_angle(:, 3)), 'blue')
 xlabel('t [s]')
 ylabel('\Delta\psi [deg]')
 
+
+DCM_error_kin_estimated_smallAngles = zeros(3,3,length(DCM_out));
+for i = 1:length(DCM_out)
+    DCM_error_kin_estimated_smallAngles(:, :, i) = DCM_error_kin_estimated(:,:,i) * small_angle_DCM(euler_error_estimated_kin(i, :))';
+end
+euler_error_estimated_kin_small_angle = DCMseries2eulerseries(DCM_error_kin_estimated_smallAngles);
+
+%Euler Angles Errors over time
+figure()
+subplot(3,1,1)
+hold on;
+plot(t_out, rad2deg(euler_error_estimated_kin_small_angle(:, 1)), 'blue')
+xlabel('t [s]')
+ylabel('\Delta\phi [deg]')
+title('Small Euler Angle Approximation Error for kinematic AD')
+subplot(3,1,2)
+hold on;
+plot(t_out, rad2deg(euler_error_estimated_kin_small_angle(:, 2)), 'blue')
+xlabel('t [s]')
+ylabel('\Delta\theta [deg]')
+subplot(3,1,3)
+hold on;
+plot(t_out, rad2deg(euler_error_estimated_kin_small_angle(:, 3)), 'blue')
+xlabel('t [s]')
+ylabel('\Delta\psi [deg]')
 
 function DCM = small_angle_DCM(angles)
     ay = angles(1);%phi
