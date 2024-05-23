@@ -13,7 +13,6 @@ close all;
 [t0_MJD_sun, a_sun, Om_sun, e_sun, om_sun, i_sun, M0_sun, n_sun] = OrbitPropagation_Sun();
 
 
-
 % Sun IC
 UT1 = [1,25,2004,00];
 JD_init = 2453029.5;
@@ -23,7 +22,7 @@ D_init = JD_init - 2451545.0;
 theta = UT1_to_theta(UT1);
 
 % EKF
-EKF_x0 =[0,0.0,0.01,0.1,0.1,0.1,0.9849];
+EKF_x0 =[0,0.1,0.1,0.1,0.1,0.1,0.9849];
 EKF_P0 = eye(7);
 
 %Initial conditions
@@ -76,35 +75,6 @@ EKF_P_post_min = out.EKF_P_post_min.Data;
 EKF_x_post_min = out.EKF_x_post_min.Data(:,:)';
 
 eclipse_condition = out.eclipse.Data();
-
-%% check that noise 
-figure()
-x = zeros(length(Meas_sun), 3);
-y = zeros(length(Meas_sun), 3);
-hold on;
-for i = 1:length(Meas_sun)
-    x(i, :) = (Meas_sun(i, :));
-    y(i, :) = DCM_out(:,:,i)*Meas_sunV(i, :)';
-end
-plot(t_out, x(:, 1))
-plot(t_out, y(:, 1), LineWidth=2)
-plot(t_out, x(:, 2))
-plot(t_out, y(:, 2), LineWidth=2)
-plot(t_out, x(:, 3))
-plot(t_out, y(:, 3), LineWidth=2)
-legend('Noisy x', 'Actual x','Noisy y', 'Actual y','Noisy z', 'Actual z')
-title('Magnetic Field Vector Components noisy vs actual (principal frame)')
-xlabel('time [s]')
-ylabel('Vector components')
-%% check for eclipse condition
-ind = find(eclipse_condition == 1);
-disp((t_out(ind(end)) - t_out(ind(1)))/60)
-disp((t_out(ind(end)) - t_out(ind(1)))/T_orbit)
-
-%% Get different coordinate frames with respect to inertial frame
-% Rot = DCM_out;
-% [Xp, Yp, Zp, Xb, Yb, Zb] = principal_body_frame_inertial(Rot, R_princ);
-% [R, T, N] = RTN_frame_inertial(state_out);
 
 
 % %% Plotting PSET6
@@ -368,70 +338,96 @@ plot(t_out, rad2deg(euler_error_estimated_kin_small_angle(:, 3)), 'blue')
 xlabel('t [s]')
 ylabel('\Delta\psi [deg]')
 
-% function DCM = small_angle_DCM(angles)
-%     ay = angles(1);%phi
-%     ax = angles(2); %theta
-%     az = angles(3);
-%     DCM = [1, az, -ay; -az, 1, ax; ay, -ax, 1]; 
-% end
 
 
 %% EKF
-% DCM_estimated_EKF = DCM_out;
-% for i = 1:length(DCM_out)
-%     DCM_estimated_EKF(:,:,i) = quat2dcm([EKF_x_post_min(i, 7), EKF_x_post_min(i, 4:6)]);
-% end
-% euler_error_estimated_Q = DCMseries2eulerseries(DCM_error_Q_estimated);
-t = tstart:0.1:tend;
+
 figure()
 subplot(4,1,1)
 hold on;
-plot(t, (EKF_x_post_min(:, 4)), 'red', 'LineWidth',2)
+plot(t_out, (EKF_x_post_min(:, 4)), 'red', 'LineWidth',2)
 plot(t_out, (quat_out(:, 1)),'Linestyle', '--', 'Color','blue', 'LineWidth',2)
 xlabel('t [s]')
 ylabel('q1')
 title('Quaternions estimated from kinematic equations')
 subplot(4,1,2)
 hold on;
-plot(t, (EKF_x_post_min(:, 5)), 'red',  'LineWidth',2)
+plot(t_out, (EKF_x_post_min(:, 5)), 'red',  'LineWidth',2)
 plot(t_out, (quat_out(:, 2)), 'Linestyle', '--', 'Color','blue', 'LineWidth',2)
 xlabel('t [s]')
 ylabel('q2')
 subplot(4,1,3)
 hold on;
-plot(t, (EKF_x_post_min(:, 6)),'Color', 'red', 'LineWidth',2)
+plot(t_out, (EKF_x_post_min(:, 6)),'Color', 'red', 'LineWidth',2)
 plot(t_out, (quat_out(:, 3)),'Linestyle', '--', 'Color','blue', 'LineWidth',2)
 xlabel('t [s]')
 ylabel('q3')
 subplot(4,1,4)
 hold on;
-plot(t, (EKF_x_post_min(:, 7)),'Color', 'red', 'LineWidth',2)
+plot(t_out, (EKF_x_post_min(:, 7)),'Color', 'red', 'LineWidth',2)
 plot(t_out, (quat_out(:, 4)),'Linestyle', '--', 'Color','blue', 'LineWidth',2)
 xlabel('t [s]')
 ylabel('q4')
 legend('Estimated Quaternions', 'True Quaternions')
+
+%errors in quat
+figure()
+subplot(4,1,1)
+hold on;
+plot(t_out(20:end), (quat_out(20:end, 1))-(EKF_x_post_min(20:end, 4)), 'red','Linestyle', ':', 'LineWidth',1)
+xlabel('t [s]')
+ylabel('\Delta q1')
+title('Quaternion Error between EKF estimated and true (with perturbations')
+subplot(4,1,2)
+hold on;
+plot(t_out(20:end), (quat_out(20:end, 2))-(EKF_x_post_min(20:end, 5)),':', 'red',  'LineWidth',1)
+xlabel('t [s]')
+ylabel('\Delta q2')
+subplot(4,1,3)
+hold on;
+plot(t_out(20:end), (quat_out(20:end, 3))-(EKF_x_post_min(20:end, 6)),':','Color', 'red', 'LineWidth',1)
+xlabel('t [s]')
+ylabel('\Delta q3')
+subplot(4,1,4)
+hold on;
+plot(t_out(20:end), (quat_out(20:end, 4))-(EKF_x_post_min(20:end, 7)),':','Color', 'red', 'LineWidth',1)
+xlabel('t [s]')
+ylabel('\Delta q4')
+
 %%
 % Plot over time
 figure()
 subplot(3,1,1)
-plot(t, EKF_x_post_min(:, 1),'Color', 'red', 'LineWidth',2)
+plot(t_out, EKF_x_post_min(:, 1),'Color', 'red', 'LineWidth',2)
 hold on;
 plot(t_out, omega_out(:, 1), 'Linestyle', '--', 'Color','blue', 'LineWidth',2)
 xlabel('t [s]')
 ylabel('\omega_x [rad/s]')
 title('Angular Velocity over time from the EKF VS true state')
 subplot(3,1,2)
-plot(t, EKF_x_post_min(:, 2),'Color', 'red', 'LineWidth',2)
+plot(t_out, EKF_x_post_min(:, 2),'Color', 'red', 'LineWidth',2)
 hold on;
 plot(t_out, omega_out(:, 2), 'Linestyle', '--', 'Color','blue', 'LineWidth',2)
 
 xlabel('t [s]')
 ylabel('\omega_y [rad/s]')
 subplot(3,1,3)
-plot(t, EKF_x_post_min(:, 3),'Color', 'red', 'LineWidth',2)
+plot(t_out, EKF_x_post_min(:, 3),'Color', 'red', 'LineWidth',2)
 hold on;
 plot(t_out, omega_out(:, 3), 'Linestyle', '--', 'Color','blue', 'LineWidth',2)
 
 xlabel('t [s]')
 ylabel('\omega_z [rad/s]')
 legend('Estimated Omega', 'True Omega')
+
+%% Plot for number 6
+
+
+%% calculate small angle DCM for 213 sequence
+function DCM = small_angle_DCM(angles)
+    ay = angles(1);%phi
+    ax = angles(2); %theta
+    az = angles(3);
+    DCM = [1, az, -ay; -az, 1, ax; ay, -ax, 1]; 
+end
+
