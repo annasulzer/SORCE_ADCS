@@ -56,8 +56,10 @@ out = sim("main");
 t_out = out.tout;
 omega_out = out.omega.Data(:,:)';
 L_out = (inertia_p * omega_out')';
-Meas_sun = out.simout.Data(1:3,:)';
-Meas_sunV = out.simout1.Data(1:3,:)';
+Meas_mag = out.simout.Data(1:3,:)';
+Meas_magV = out.simout1.Data(1:3,:)';
+Meas_sun = out.simout3.Data(1:3,:)';
+Meas_sunV = out.simout2.Data(1:3,:)';
 
 %attitude representation SWITCH
 quat_out = out.quaternions.Data(:, :)';
@@ -81,9 +83,10 @@ DCM_estimated_det_out = out.DCM_estimated_det.Data;
 quat_estimated_Q_out = out.quat_estimated_Q.Data(:, :)';
 quat_estimated_kin_out = out.quat_estimated_kin.Data(:, :)';
 
-
+sun_sensor_out = out.simout.Data;
 eclipse_condition = out.eclipse.Data();
 %% check that norm of one is still given
+% Sun Sensor
 figure()
 x = zeros(length(Meas_sun), 3);
 y = zeros(length(Meas_sun), 3);
@@ -99,13 +102,36 @@ plot(t_out, y(:, 2), LineWidth=2)
 plot(t_out, x(:, 3))
 plot(t_out, y(:, 3), LineWidth=2)
 legend('Noisy x', 'Actual x','Noisy y', 'Actual y','Noisy z', 'Actual z')
+title('Sun Sensor Vector Components noisy vs actual (principal frame)')
+xlabel('time [s]')
+ylabel('Vector components')
+
+% Magnetic
+figure()
+x = zeros(length(Meas_mag), 3);
+y = zeros(length(Meas_mag), 3);
+hold on;
+for i = 1:length(Meas_mag)
+    x(i, :) = (Meas_mag(i, :));
+    y(i, :) = DCM_out(:,:,i)*Meas_magV(i, :)';
+end
+plot(t_out, x(:, 1))
+plot(t_out, y(:, 1), LineWidth=2)
+plot(t_out, x(:, 2))
+plot(t_out, y(:, 2), LineWidth=2)
+plot(t_out, x(:, 3))
+plot(t_out, y(:, 3), LineWidth=2)
+legend('Noisy x', 'Actual x','Noisy y', 'Actual y','Noisy z', 'Actual z')
 title('Magnetic Field Vector Components noisy vs actual (principal frame)')
 xlabel('time [s]')
 ylabel('Vector components')
+
 %% check for eclipse condition
 ind = find(eclipse_condition == 1);
 disp((t_out(ind(end)) - t_out(ind(1)))/60)
 disp((t_out(ind(end)) - t_out(ind(1)))/T_orbit)
+disp(t_out(ind(end)))
+disp(t_out(ind(1)))
 
 %% Get different coordinate frames with respect to inertial frame
 Rot = DCM_out;
@@ -388,7 +414,7 @@ Rot = DCM_out;
 % legend('M_x', 'M_y', 'M_z', 'M_{tot}','M_{max}')
 % title('Magnetic torque over time (one orbit)')
 % 
-% % Verify SRP torque
+% Verify SRP torque
 % figure()
 % hold on;
 % plot(t_out, M_SRP_out(:, 1), LineWidth=2)
@@ -537,9 +563,7 @@ legend('Estimated Quaternions', 'True Quaternions')
 %% Deterministic
 DCM_error_det_estimated = DCM_out;
 for i = 1:length(DCM_out)
-    DCM_estimated_det = eul2rotm(euler_est_det(i, :),'YXZ');
-    DCM_error_det_estimated(:, :, i) = DCM_out(:,:,i) * DCM_estimated_det';
-    %disp(DCM_error_det_estimated(:,:,i))
+    DCM_error_det_estimated(:, :, i) = DCM_out(:,:,i) * DCM_estimated_det_out(:,:,i)';
 end
 euler_error_estimated_det = DCMseries2eulerseries(DCM_error_det_estimated);
 
