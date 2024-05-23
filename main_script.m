@@ -22,8 +22,9 @@ D_init = JD_init - 2451545.0;
 theta = UT1_to_theta(UT1);
 
 % EKF
-EKF_x0 =[0,0.1,0.1,0.1,0.1,0.1,0.9849];
 EKF_P0 = eye(7);
+EKF_P0(1:3, 1:3) = 0.005.* EKF_P0(1:3, 1:3); %gyro variance
+EKF_P0(4:7, 4:7) = 0.01.* EKF_P0(4:7, 4:7); %angle variance on sun
 
 %Initial conditions
 [state_ECI_init, T_orbit, n] = OrbitPropagation();
@@ -39,7 +40,7 @@ tstart = 0; tend = T_orbit;
 
 
 %% Simulate
-out = sim("main");
+out = sim("mainEthan");
 %% Read out simulation data
 %attitude propagation
 t_out = out.tout;
@@ -374,23 +375,23 @@ legend('Estimated Quaternions', 'True Quaternions')
 figure()
 subplot(4,1,1)
 hold on;
-plot(t_out(20:end), (quat_out(20:end, 1))-(EKF_x_post_min(20:end, 4)), 'red','Linestyle', ':', 'LineWidth',1)
+plot(t_out(20:end-2), (quat_out(20:end-2, 1))-(EKF_x_post_min(20:end-2, 4)), 'red', 'LineWidth',1)
 xlabel('t [s]')
 ylabel('\Delta q1')
 title('Quaternion Error between EKF estimated and true (with perturbations')
 subplot(4,1,2)
 hold on;
-plot(t_out(20:end), (quat_out(20:end, 2))-(EKF_x_post_min(20:end, 5)),':', 'red',  'LineWidth',1)
+plot(t_out(20:end-2), (quat_out(20:end-2, 2))-(EKF_x_post_min(20:end-2, 5)), 'red',  'LineWidth',1)
 xlabel('t [s]')
 ylabel('\Delta q2')
 subplot(4,1,3)
 hold on;
-plot(t_out(20:end), (quat_out(20:end, 3))-(EKF_x_post_min(20:end, 6)),':','Color', 'red', 'LineWidth',1)
+plot(t_out(20:end-2), (quat_out(20:end-2, 3))-(EKF_x_post_min(20:end-2, 6)),'Color', 'red', 'LineWidth',1)
 xlabel('t [s]')
 ylabel('\Delta q3')
 subplot(4,1,4)
 hold on;
-plot(t_out(20:end), (quat_out(20:end, 4))-(EKF_x_post_min(20:end, 7)),':','Color', 'red', 'LineWidth',1)
+plot(t_out(20:end-2), (quat_out(20:end-2, 4))-(EKF_x_post_min(20:end-2, 7)),'Color', 'red', 'LineWidth',1)
 xlabel('t [s]')
 ylabel('\Delta q4')
 
@@ -419,10 +420,72 @@ plot(t_out, omega_out(:, 3), 'Linestyle', '--', 'Color','blue', 'LineWidth',2)
 xlabel('t [s]')
 ylabel('\omega_z [rad/s]')
 legend('Estimated Omega', 'True Omega')
+%% Uncertainty plots
+std_wx = squeeze(sqrt(EKF_P_post_min(1,1,:)));
+std_wy = squeeze(sqrt(EKF_P_post_min(2,2,:)));
+std_wz = squeeze(sqrt(EKF_P_post_min(3,3,:)));
+std_q1 = squeeze(sqrt(EKF_P_post_min(4,4,:)));
+std_q2 = squeeze(sqrt(EKF_P_post_min(5,5,:)));
+std_q3 = squeeze(sqrt(EKF_P_post_min(6,6,:)));
+std_q4 = squeeze(sqrt(EKF_P_post_min(7,7,:)));
 
-%% Plot for number 6
 
+figure()
+subplot(3,1,1)
+fill([t_out; flipud(t_out)],[EKF_x_post_min(:,1) + std_wx; flipud(EKF_x_post_min(:,1) - std_wx)],'g', 'FaceAlpha', 0.15, 'FaceColor', '#8fce00', 'LineStyle', 'none');
+hold on;
+plot(t_out, EKF_x_post_min(:,1), 'b', 'LineWidth', 2);
+xlabel('t [s]')
+ylabel('\omega_x [rad/s]')
+title('Angular Velocity over time with the standard deviations from the EKF')
+subplot(3,1,2)
+fill([t_out; flipud(t_out)],[EKF_x_post_min(:,2) + std_wy; flipud(EKF_x_post_min(:,2) - std_wy)],'g', 'FaceAlpha', 0.15, 'FaceColor', '#8fce00', 'LineStyle', 'none');
+hold on;
+plot(t_out, EKF_x_post_min(:,1), 'b', 'LineWidth', 2);
 
+xlabel('t [s]')
+ylabel('\omega_y [rad/s]')
+subplot(3,1,3)
+fill([t_out; flipud(t_out)],[EKF_x_post_min(:,3) + std_wz; flipud(EKF_x_post_min(:,3) - std_wz)],'g', 'FaceAlpha', 0.15, 'FaceColor', '#8fce00', 'LineStyle', 'none');
+hold on;
+plot(t_out, EKF_x_post_min(:,1), 'b', 'LineWidth', 2);
+
+xlabel('t [s]')
+ylabel('\omega_z [rad/s]')
+legend('Standard Deviation', 'Mean Omega')
+
+%errors in quat
+figure()
+subplot(4,1,1)
+hold on;
+fill([t_out; flipud(t_out)],[EKF_x_post_min(:,4) + std_q1; flipud(EKF_x_post_min(:,4) - std_q1)],'g', 'FaceAlpha', 0.15, 'FaceColor', '#8fce00', 'LineStyle', 'none');
+hold on;
+plot(t_out, EKF_x_post_min(:,1), 'b', 'LineWidth', 2);
+xlabel('t [s]')
+ylabel('\Delta q1')
+title('Quaternion over time with the standard deviations from the EKF')
+subplot(4,1,2)
+hold on;
+fill([t_out; flipud(t_out)],[EKF_x_post_min(:,5) + std_q2; flipud(EKF_x_post_min(:,5) - std_q2)],'g', 'FaceAlpha', 0.15, 'FaceColor', '#8fce00', 'LineStyle', 'none');
+hold on;
+plot(t_out, EKF_x_post_min(:,1), 'b', 'LineWidth', 2);
+xlabel('t [s]')
+ylabel('\Delta q2')
+subplot(4,1,3)
+hold on;
+fill([t_out; flipud(t_out)],[EKF_x_post_min(:,6) + std_q3; flipud(EKF_x_post_min(:,6) - std_q3)],'g', 'FaceAlpha', 0.15, 'FaceColor', '#8fce00', 'LineStyle', 'none');
+hold on;
+plot(t_out, EKF_x_post_min(:,1), 'b', 'LineWidth', 2);
+xlabel('t [s]')
+ylabel('\Delta q3')
+subplot(4,1,4)
+hold on;
+fill([t_out; flipud(t_out)],[EKF_x_post_min(:,7) + std_q4; flipud(EKF_x_post_min(:,7) - std_q4)],'g', 'FaceAlpha', 0.15, 'FaceColor', '#8fce00', 'LineStyle', 'none');
+hold on;
+plot(t_out, EKF_x_post_min(:,1), 'b', 'LineWidth', 2);
+xlabel('t [s]')
+ylabel('\Delta q4')
+legend('Standard Deviation', 'Mean Quaternion')
 %% calculate small angle DCM for 213 sequence
 function DCM = small_angle_DCM(angles)
     ay = angles(1);%phi
