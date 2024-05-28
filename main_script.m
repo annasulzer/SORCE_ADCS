@@ -40,7 +40,7 @@ tstart = 0; tend = T_orbit;
 
 
 %% Simulate
-out = sim("mainEthan");
+out = sim("main");
 %% Read out simulation data
 %attitude propagation
 t_out = out.tout;
@@ -339,7 +339,33 @@ plot(t_out, rad2deg(euler_error_estimated_kin_small_angle(:, 3)), 'blue')
 xlabel('t [s]')
 ylabel('\Delta\psi [deg]')
 
+%frobenius norms
+frobenius_norm_smallAngles = zeros(3,length(DCM_out));
+for i = 1:length(DCM_out)
+    frobenius_norm_smallAngles(1, i) = norm(DCM_error_det_estimated(:,:,i) - small_angle_DCM(euler_error_estimated_det(i, :)), 'fro');
+    frobenius_norm_smallAngles(2, i) = norm(DCM_error_Q_estimated(:,:,i) - small_angle_DCM(euler_error_estimated_Q(i, :)), 'fro');
+    frobenius_norm_smallAngles(3, i) = norm(DCM_error_kin_estimated(:,:,i) - small_angle_DCM(euler_error_estimated_kin(i, :)), 'fro');
+end
 
+%Euler Angles Errors over time
+figure()
+subplot(3,1,1)
+hold on;
+plot(t_out, frobenius_norm_smallAngles(1, :))
+xlabel('t [s]')
+ylabel('Frobenius Norm')
+legend('Deterministic AD')
+title('Frobenius Norm of the difference between small angle DCM and exact DCM')
+subplot(3,1,2)
+plot(t_out, frobenius_norm_smallAngles(2, :))
+xlabel('t [s]')
+ylabel('Frobenius Norm')
+legend('Q-Method')
+subplot(3,1,3)
+plot(t_out, frobenius_norm_smallAngles(3, :))
+xlabel('t [s]')
+ylabel('Frobenius Norm')
+legend('Kinematic AD')
 
 %% EKF
 
@@ -394,6 +420,28 @@ hold on;
 plot(t_out(20:end-2), (quat_out(20:end-2, 4))-(EKF_x_post_min(20:end-2, 7)),'Color', 'red', 'LineWidth',1)
 xlabel('t [s]')
 ylabel('\Delta q4')
+
+
+
+%% errors in omega
+figure()
+subplot(3,1,1)
+hold on;
+plot(t_out(20:end-2), (omega_out(20:end-2, 1))-(EKF_x_post_min(20:end-2, 1)), 'red', 'LineWidth',1)
+xlabel('t [s]')
+ylabel('\Delta \omega_x')
+title('Angular Velocity Error EKF VS. True (with perturbations')
+subplot(3,1,2)
+hold on;
+plot(t_out(20:end-2), (omega_out(20:end-2, 2))-(EKF_x_post_min(20:end-2, 2)), 'red',  'LineWidth',1)
+xlabel('t [s]')
+ylabel('\Delta \omega_y')
+subplot(3,1,3)
+hold on;
+plot(t_out(20:end-2), (omega_out(20:end-2, 3))-(EKF_x_post_min(20:end-2, 3)),'Color', 'red', 'LineWidth',1)
+xlabel('t [s]')
+ylabel('\Delta \omega_z')
+
 
 %%
 % Plot over time
@@ -462,7 +510,7 @@ fill([t_out; flipud(t_out)],[EKF_x_post_min(:,4) + std_q1; flipud(EKF_x_post_min
 hold on;
 plot(t_out, EKF_x_post_min(:,1), 'b', 'LineWidth', 2);
 xlabel('t [s]')
-ylabel('\Delta q1')
+ylabel('q1')
 title('Quaternion over time with the standard deviations from the EKF')
 subplot(4,1,2)
 hold on;
@@ -470,22 +518,55 @@ fill([t_out; flipud(t_out)],[EKF_x_post_min(:,5) + std_q2; flipud(EKF_x_post_min
 hold on;
 plot(t_out, EKF_x_post_min(:,1), 'b', 'LineWidth', 2);
 xlabel('t [s]')
-ylabel('\Delta q2')
+ylabel('q2')
 subplot(4,1,3)
 hold on;
 fill([t_out; flipud(t_out)],[EKF_x_post_min(:,6) + std_q3; flipud(EKF_x_post_min(:,6) - std_q3)],'g', 'FaceAlpha', 0.15, 'FaceColor', '#8fce00', 'LineStyle', 'none');
 hold on;
 plot(t_out, EKF_x_post_min(:,1), 'b', 'LineWidth', 2);
 xlabel('t [s]')
-ylabel('\Delta q3')
+ylabel('q3')
 subplot(4,1,4)
 hold on;
 fill([t_out; flipud(t_out)],[EKF_x_post_min(:,7) + std_q4; flipud(EKF_x_post_min(:,7) - std_q4)],'g', 'FaceAlpha', 0.15, 'FaceColor', '#8fce00', 'LineStyle', 'none');
 hold on;
 plot(t_out, EKF_x_post_min(:,1), 'b', 'LineWidth', 2);
 xlabel('t [s]')
-ylabel('\Delta q4')
+ylabel('q4')
 legend('Standard Deviation', 'Mean Quaternion')
+
+%%
+% Plot over time
+figure()
+subplot(4,1,1)
+plot(t_out, EKF_x_post_min(:, 1),'Color', 'red', 'LineWidth',2)
+hold on;
+plot(t_out, omega_out(:, 1), 'Linestyle', '--', 'Color','blue', 'LineWidth',2)
+xlabel('t [s]')
+ylabel('\q1 [rad/s]')
+title('Angular Velocity over time from the EKF VS true state')
+subplot(4,1,2)
+plot(t_out, EKF_x_post_min(:, 2),'Color', 'red', 'LineWidth',2)
+hold on;
+plot(t_out, omega_out(:, 2), 'Linestyle', '--', 'Color','blue', 'LineWidth',2)
+
+xlabel('t [s]')
+ylabel('\q2 [rad/s]')
+subplot(4,1,3)
+plot(t_out, EKF_x_post_min(:, 3),'Color', 'red', 'LineWidth',2)
+hold on;
+plot(t_out, omega_out(:, 3), 'Linestyle', '--', 'Color','blue', 'LineWidth',2)
+
+xlabel('t [s]')
+ylabel('\q3 [rad/s]')
+subplot(4,1,3)
+plot(t_out, EKF_x_post_min(:, 3),'Color', 'red', 'LineWidth',2)
+hold on;
+plot(t_out, quat_out(:, 3), 'Linestyle', '--', 'Color','blue', 'LineWidth',2)
+
+xlabel('t [s]')
+ylabel('\q4 [rad/s]')
+legend('Estimated Quat', 'True Quat')
 %% calculate small angle DCM for 213 sequence
 function DCM = small_angle_DCM(angles)
     ay = angles(1);%phi
