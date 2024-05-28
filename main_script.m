@@ -74,6 +74,8 @@ quat_estimated_kin_out = out.quat_estimated_kin.Data(:, :)';
 % EKF
 EKF_P_post_min = out.EKF_P_post_min.Data;
 EKF_x_post_min = out.EKF_x_post_min.Data(:,:)';
+EKF_P_post = out.EKF_P_post.Data;
+EKF_x_post = out.EKF_x_post.Data(:,:)';
 
 eclipse_condition = out.eclipse.Data();
 
