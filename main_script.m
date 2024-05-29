@@ -76,12 +76,127 @@ EKF_P_post_min = out.EKF_P_post_min.Data;
 EKF_x_post_min = out.EKF_x_post_min.Data(:,:)';
 EKF_P_post = out.EKF_P_post.Data;
 EKF_x_post = out.EKF_x_post.Data(:,:);
+prefit_res = out.prefit_res.Data;
+postfit_res = out.postfit_res.Data;
 
 eclipse_condition = out.eclipse.Data();
 
 
 %% PSET8 Plotting
+%% Residuals Prefit
+figure()
+subplot(3,1,1)
+hold on;
+plot(t_out, squeeze(prefit_res(1, 1, :)), 'LineWidth',1)
+xlabel('t [s]')
+ylabel('\Delta x')
+title('Prefit residuals (modelled vs actual) Sun Sensor (\sigma^2 = 0.5 deg)')
+subplot(3,1,2)
+hold on;
+plot(t_out, squeeze(prefit_res(2, 1, :)), 'LineWidth',1)
+xlabel('t [s]')
+ylabel('\Delta y')
+subplot(3,1,3)
+hold on;
+plot(t_out, squeeze(prefit_res(3, 1, :)), 'LineWidth',1)
+xlabel('t [s]')
+ylabel('\Delta z')
 
+%Magnet
+figure()
+subplot(3,1,1)
+hold on;
+plot(t_out, squeeze(prefit_res(1, 2, :)), 'LineWidth',1)
+xlabel('t [s]')
+ylabel('\Delta x [T]')
+title('Prefit residuals (modelled vs actual) Magnetometer (\sigma^2 = 4.875*10^{-7} T)')
+subplot(3,1,2)
+hold on;
+plot(t_out, squeeze(prefit_res(2, 2, :)), 'LineWidth',1)
+xlabel('t [s]')
+ylabel('\Delta y [T]')
+subplot(3,1,3)
+hold on;
+plot(t_out, squeeze(prefit_res(3, 2, :)), 'LineWidth',1)
+xlabel('t [s]')
+ylabel('\Delta z [T]')
+
+%Star
+figure()
+subplot(3,1,1)
+hold on;
+plot(t_out, squeeze(prefit_res(1, 3, :)), 'LineWidth',1)
+xlabel('t [s]')
+ylabel('\Delta x')
+title('Prefit residuals (modelled vs actual) Star Tracker (mean), (\sigma^2 = 0.001 deg)')
+subplot(3,1,2)
+hold on;
+plot(t_out, squeeze(prefit_res(2, 3, :)), 'LineWidth',1)
+xlabel('t [s]')
+ylabel('\Delta y')
+subplot(3,1,3)
+hold on;
+plot(t_out, squeeze(prefit_res(3, 3, :)), 'LineWidth',1)
+xlabel('t [s]')
+ylabel('\Delta z')
+
+%% Residuals Post fit
+% Residuals
+figure()
+subplot(3,1,1)
+hold on;
+plot(t_out, squeeze(postfit_res(1, 1, :)), 'LineWidth',1)
+xlabel('t [s]')
+ylabel('\Delta x')
+title('Postfit residuals (modelled vs actual) Sun Sensor (\sigma^2 = 0.5 deg)')
+subplot(3,1,2)
+hold on;
+plot(t_out, squeeze(postfit_res(2, 1, :)), 'LineWidth',1)
+xlabel('t [s]')
+ylabel('\Delta y')
+subplot(3,1,3)
+hold on;
+plot(t_out, squeeze(postfit_res(3, 1, :)), 'LineWidth',1)
+xlabel('t [s]')
+ylabel('\Delta z')
+
+%Magnet
+figure()
+subplot(3,1,1)
+hold on;
+plot(t_out, squeeze(postfit_res(1, 2, :)), 'LineWidth',1)
+xlabel('t [s]')
+ylabel('\Delta x [T]')
+title('Postfit residuals (modelled vs actual) Magnetometer (\sigma^2 = 4.875*10^{-7} T)')
+subplot(3,1,2)
+hold on;
+plot(t_out, squeeze(postfit_res(2, 2, :)), 'LineWidth',1)
+xlabel('t [s]')
+ylabel('\Delta y [T]')
+subplot(3,1,3)
+hold on;
+plot(t_out, squeeze(postfit_res(3, 2, :)), 'LineWidth',1)
+xlabel('t [s]')
+ylabel('\Delta z [T]')
+
+%Star
+figure()
+subplot(3,1,1)
+hold on;
+plot(t_out, squeeze(postfit_res(1, 3, :)), 'LineWidth',1)
+xlabel('t [s]')
+ylabel('\Delta x')
+title('Postfit residuals (modelled vs actual) Star Tracker (mean), (\sigma^2 = 0.001 deg)')
+subplot(3,1,2)
+hold on;
+plot(t_out, squeeze(postfit_res(2, 3, :)), 'LineWidth',1)
+xlabel('t [s]')
+ylabel('\Delta y')
+subplot(3,1,3)
+hold on;
+plot(t_out, squeeze(postfit_res(3, 3, :)), 'LineWidth',1)
+xlabel('t [s]')
+ylabel('\Delta z')
 %% EKF
 
 figure()
@@ -133,6 +248,30 @@ ylabel('\Delta q3')
 subplot(4,1,4)
 hold on;
 plot(t_out(20:end-2), (quat_out(20:end-2, 4))-(EKF_x_post_min(20:end-2, 7)),'Color', 'red', 'LineWidth',1)
+xlabel('t [s]')
+ylabel('\Delta q4')
+
+
+figure()
+subplot(4,1,1)
+hold on;
+plot(t_out(20:end-2), (quat_out(20:end-2, 1))-(EKF_x_post(20:end-2, 4)), 'red', 'LineWidth',1)
+xlabel('t [s]')
+ylabel('\Delta q1')
+title('Quaternion Error between EKF estimated and true (with perturbations')
+subplot(4,1,2)
+hold on;
+plot(t_out(20:end-2), (quat_out(20:end-2, 2))-(EKF_x_post(20:end-2, 5)), 'red',  'LineWidth',1)
+xlabel('t [s]')
+ylabel('\Delta q2')
+subplot(4,1,3)
+hold on;
+plot(t_out(20:end-2), (quat_out(20:end-2, 3))-(EKF_x_post(20:end-2, 6)),'Color', 'red', 'LineWidth',1)
+xlabel('t [s]')
+ylabel('\Delta q3')
+subplot(4,1,4)
+hold on;
+plot(t_out(20:end-2), (quat_out(20:end-2, 4))-(EKF_x_post(20:end-2, 7)),'Color', 'red', 'LineWidth',1)
 xlabel('t [s]')
 ylabel('\Delta q4')
 
