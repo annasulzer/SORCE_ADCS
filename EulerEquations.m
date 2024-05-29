@@ -244,8 +244,8 @@ Rot = DCM_out;
 % xlabel('t [s]')
 % ylabel('\psi [deg]')
 % 
-% %% Check Attitude Representation
-% % Angular Momentum Vector
+%% Check Attitude Representation
+% Angular Momentum Vector
 % figure()
 % subplot(3,1,1)
 % hold on;
@@ -267,8 +267,8 @@ Rot = DCM_out;
 % xlabel('t [s]')
 % ylabel('L_z [kg*m^2/s]')
 % legend('Euler Angles', 'Quaternions')
-% % 
-% %%
+% 
+%%
 % Plot Omega over time
 % figure()
 % subplot(3,1,1)
