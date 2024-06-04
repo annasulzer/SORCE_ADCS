@@ -12,7 +12,6 @@ close all;
 [state_ECI_init, T_orbit, n] = OrbitPropagation();
 [t0_MJD_sun, a_sun, Om_sun, e_sun, om_sun, i_sun, M0_sun, n_sun] = OrbitPropagation_Sun();
 
-
 % Sun IC
 UT1 = [1,25,2004,00];
 JD_init = 2453029.5;
@@ -28,9 +27,20 @@ EKF_P0(4:7, 4:7) = 0.01.* 10* EKF_P0(4:7, 4:7); %angle variance on sun * 10
 
 %Initial conditions
 [state_ECI_init, T_orbit, n] = OrbitPropagation();
-omega_init = [0; 0; 0.01];
+omega_init = [0; 0; 0.05];
 DCM_initial = targetDCM([26321453.5527815,	-132781955.130633,	-57571626.5531097]', R_princ); %rinitial state sun
 
+% Actuator Settings
+I_w = 0.0075;
+omega_w_init = [0;0;0;0];
+A = R_princ*[1,0,0,1/sqrt(3);
+     0,1,0,1/sqrt(3);
+     0,0,1,1/sqrt(3);];
+A_star = R_princ*[5/6,-1/6,-1/6;
+          -1/6,5/6,-1/6;
+          -1/6,-1/6,5/6;
+          sqrt(3)/2,sqrt(3)/2,sqrt(3)/2]';
+A_star = A_star';
 
 %Integration settings
 eps = 1e-10;
@@ -65,6 +75,7 @@ M_mag_out = out.M_mag.Data(:,:)';
 M_SRP_out = out.M_SRP.Data(:,:)';
 M_aero_out = out.M_aero.Data(:,:)';
 M_ALL_out = out.M_ALL.Data(:,:)';
+B = out.B.Data;
 
 %State Estimation
 DCM_estimated_det_out = out.DCM_estimated_det.Data;
@@ -81,16 +92,20 @@ postfit_res = out.postfit_res.Data;
 
 eclipse_condition = out.eclipse.Data();
 
+% Actuators
+M_C_out = out.M_C.Data;
+omega_w_out = out.omega_w.Data;
+
 
 %% PSET8 Plotting
 %% Residuals Prefit
 %Stats
-mean_prefit_sun = mean(squeeze(prefit_res(:, 1, :)), 2)
-cov_prefit_sun = cov(squeeze(prefit_res(:, 1, :))')
-mean_prefit_mag = mean(squeeze(prefit_res(:, 2, :)), 2)
-cov_prefit_mag = cov(squeeze(prefit_res(:, 2, :))')
-mean_prefit_star = mean(squeeze(prefit_res(:, 3, :)), 2)
-cov_prefit_star = cov(squeeze(prefit_res(:, 3, :))')
+mean_prefit_sun = mean(squeeze(prefit_res(:, 1, :)), 2);
+cov_prefit_sun = cov(squeeze(prefit_res(:, 1, :))');
+mean_prefit_mag = mean(squeeze(prefit_res(:, 2, :)), 2);
+cov_prefit_mag = cov(squeeze(prefit_res(:, 2, :))');
+mean_prefit_star = mean(squeeze(prefit_res(:, 3, :)), 2);
+cov_prefit_star = cov(squeeze(prefit_res(:, 3, :))');
 
 figure()
 subplot(3,1,1)
@@ -280,11 +295,11 @@ std_q3 = 3*squeeze(sqrt(EKF_P_post(6,6,:)));
 std_q4 = 3*squeeze(sqrt(EKF_P_post(7,7,:)));
 
 %Statistics
-mean_errors_quat = mean(errors_quat)
-cov_errors_quat = cov(errors_quat)
+mean_errors_quat = mean(errors_quat);
+cov_errors_quat = cov(errors_quat);
 errors_om = (omega_out)-(EKF_x_post(:, 1:3));
-mean_errors_om = mean(errors_om)
-cov_errors_om = cov(errors_om)
+mean_errors_om = mean(errors_om);
+cov_errors_om = cov(errors_om);
 
 
 figure()
@@ -572,6 +587,65 @@ plot(t_out, quat_out(:, 3), 'Linestyle', '--', 'Color','blue', 'LineWidth',2)
 xlabel('t [s]')
 ylabel('\q4 [rad/s]')
 legend('Estimated Quat', 'True Quat')
+
+%% Torques
+
+% Magnetic Torque
+figure()
+hold on;
+plot(t_out, M_mag_out(:, 1), LineWidth=2)
+plot(t_out, M_mag_out(:, 2),LineWidth=2)
+plot(t_out, M_mag_out(:, 3),LineWidth=2)
+plot(t_out, sqrt(M_mag_out(:, 1).^2 + M_mag_out(:, 2).^2 + M_mag_out(:, 3).^2), LineWidth=2)
+M_mag_max = 2*0.000154100322136014*(6378^3)*(3.08e-5)/((7.0049e3)^3);
+B = squeeze(B);
+B = B';
+yline(M_mag_max,'--k','LineWidth',2)
+yline(-M_mag_max,'--k','LineWidth',2)
+xlabel('t [s]')
+ylabel('Magnetic Torque [Nm]')
+legend('M_x', 'M_y', 'M_z', 'M_{tot}','M_{max}')
+title('Magnetic torque over time (one orbit)')
+
+% All torques
+figure()
+hold on;
+plot(t_out, sqrt(M_mag_out(:, 1).^2 + M_mag_out(:, 2).^2 + M_mag_out(:, 3).^2), LineWidth=2)
+plot(t_out, sqrt(M_SRP_out(:, 1).^2 + M_SRP_out(:, 2).^2 + M_SRP_out(:, 3).^2), LineWidth=2)
+plot(t_out, sqrt(M_aero_out(:, 1).^2 + M_aero_out(:, 2).^2 + M_aero_out(:, 3).^2), LineWidth=2)
+plot(t_out, sqrt(M_grav_out(:, 1).^2 + M_grav_out(:, 2).^2 + M_grav_out(:, 3).^2), LineWidth=2)
+xlabel('t [s]')
+ylabel('Torque [Nm]')
+legend('M_{mag}', 'M_{SRP}', 'M_{aero}', 'M_{grav}')
+title('All torques over time (one orbit)')
+
+% Resultant torques
+figure()
+hold on;
+plot(t_out, M_ALL_out, LineWidth=2)
+xlabel('t [s]')
+ylabel('Torque [Nm]')
+legend('M_x', 'M_y', 'M_z')
+title('Resultant total torque over time (one orbit)')
+
+%% Actuators 
+figure()
+hold on;
+plot(t_out, squeeze(omega_w_out), LineWidth=2)
+xlabel('Time [s]')
+ylabel('MW Angular Velocities [rad/s]')
+legend('1', '2', '3', '4')
+title('Angular velocity of MW')
+
+figure()
+hold on;
+plot(t_out, squeeze(M_C_out), LineWidth=2)
+xlabel('Time [s]')
+ylabel('Control Torque [Nm]')
+legend('x', 'y', 'z')
+title('Control Torque Vector')
+
+
 %% calculate small angle DCM for 213 sequence
 function DCM = small_angle_DCM(angles)
     ay = angles(1);%phi
@@ -579,4 +653,5 @@ function DCM = small_angle_DCM(angles)
     az = angles(3);
     DCM = [1, az, -ay; -az, 1, ax; ay, -ax, 1]; 
 end
+
 

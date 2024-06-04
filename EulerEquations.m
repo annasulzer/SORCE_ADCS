@@ -50,7 +50,7 @@ relTol = 1e-6;
 tstart = 0; tend = T_orbit;
 
 %% Simulate
-out = sim("main");
+out = sim("mainEthan");
 %% Read out simulation data
 %attitude propagation
 t_out = out.tout;
@@ -416,26 +416,26 @@ Rot = DCM_out;
 % legend('M_x', 'M_y', 'M_z', 'M_{tot}','M_{max}')
 % title('Aerodynamic torque over time (one orbit)')
 % 
-% % All torques
-% figure()
-% hold on;
-% plot(t_out, sqrt(M_mag_out(:, 1).^2 + M_mag_out(:, 2).^2 + M_mag_out(:, 3).^2), LineWidth=2)
-% plot(t_out, sqrt(M_SRP_out(:, 1).^2 + M_SRP_out(:, 2).^2 + M_SRP_out(:, 3).^2), LineWidth=2)
-% plot(t_out, sqrt(M_aero_out(:, 1).^2 + M_aero_out(:, 2).^2 + M_aero_out(:, 3).^2), LineWidth=2)
-% plot(t_out, sqrt(M_grav_out(:, 1).^2 + M_grav_out(:, 2).^2 + M_grav_out(:, 3).^2), LineWidth=2)
-% xlabel('t [s]')
-% ylabel('Torque [Nm]')
-% legend('M_{mag}', 'M_{SRP}', 'M_{aero}', 'M_{grav}')
-% title('All torques over time (one orbit)')
-% 
-% % Resultant torques
-% figure()
-% hold on;
-% plot(t_out, M_ALL_out, LineWidth=2)
-% xlabel('t [s]')
-% ylabel('Torque [Nm]')
-% legend('M_x', 'M_y', 'M_z')
-% title('Resultant total torque over time (one orbit)')
+% All torques
+figure()
+hold on;
+plot(t_out, sqrt(M_mag_out(:, 1).^2 + M_mag_out(:, 2).^2 + M_mag_out(:, 3).^2), LineWidth=2)
+plot(t_out, sqrt(M_SRP_out(:, 1).^2 + M_SRP_out(:, 2).^2 + M_SRP_out(:, 3).^2), LineWidth=2)
+plot(t_out, sqrt(M_aero_out(:, 1).^2 + M_aero_out(:, 2).^2 + M_aero_out(:, 3).^2), LineWidth=2)
+plot(t_out, sqrt(M_grav_out(:, 1).^2 + M_grav_out(:, 2).^2 + M_grav_out(:, 3).^2), LineWidth=2)
+xlabel('t [s]')
+ylabel('Torque [Nm]')
+legend('M_{mag}', 'M_{SRP}', 'M_{aero}', 'M_{grav}')
+title('All torques over time (one orbit)')
+
+% Resultant torques
+figure()
+hold on;
+plot(t_out, M_ALL_out, LineWidth=2)
+xlabel('t [s]')
+ylabel('Torque [Nm]')
+legend('M_x', 'M_y', 'M_z')
+title('Resultant total torque over time (one orbit)')
 % 
 % 
 % %% 
