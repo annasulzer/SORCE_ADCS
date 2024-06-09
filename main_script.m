@@ -109,33 +109,33 @@ DCM_error_act = out.DCM_error_act.Data();
 %% PSET8 Plotting
 %% Residuals Prefit
 % %Stats
-% mean_prefit_sun = mean(squeeze(prefit_res(:, 1, :)), 2);
-% cov_prefit_sun = cov(squeeze(prefit_res(:, 1, :))');
-% mean_prefit_mag = mean(squeeze(prefit_res(:, 2, :)), 2);
-% cov_prefit_mag = cov(squeeze(prefit_res(:, 2, :))');
-% mean_prefit_star = mean(squeeze(prefit_res(:, 3, :)), 2);
-% cov_prefit_star = cov(squeeze(prefit_res(:, 3, :))');
-% 
-% figure()
-% subplot(3,1,1)
-% hold on;
-% plot(t_out, squeeze(prefit_res(1, 1, :)), 'LineWidth',1)
-% ylim([-0.05,0.05])
-% xlabel('t [s]')
-% ylabel('z_x')
-% title('Prefit residuals Sun Sensor')
-% subplot(3,1,2)
-% hold on;
-% plot(t_out, squeeze(prefit_res(2, 1, :)), 'LineWidth',1)
-% ylim([-0.05,0.05])
-% xlabel('t [s]')
-% ylabel('z_y')
-% subplot(3,1,3)
-% hold on;
-% plot(t_out, squeeze(prefit_res(3, 1, :)), 'LineWidth',1)
-% ylim([-0.05,0.05])
-% xlabel('t [s]')
-% ylabel('z_z')
+mean_prefit_sun = mean(squeeze(prefit_res(:, 1, :)), 2);
+cov_prefit_sun = cov(squeeze(prefit_res(:, 1, :))');
+mean_prefit_mag = mean(squeeze(prefit_res(:, 2, :)), 2);
+cov_prefit_mag = cov(squeeze(prefit_res(:, 2, :))');
+mean_prefit_star = mean(squeeze(prefit_res(:, 3, :)), 2);
+cov_prefit_star = cov(squeeze(prefit_res(:, 3, :))');
+
+figure()
+subplot(3,1,1)
+hold on;
+plot(t_out, squeeze(prefit_res(1, 1, :)), 'LineWidth',1)
+ylim([-0.05,0.05])
+xlabel('t [s]')
+ylabel('z_x')
+title('Prefit residuals Sun Sensor')
+subplot(3,1,2)
+hold on;
+plot(t_out, squeeze(prefit_res(2, 1, :)), 'LineWidth',1)
+ylim([-0.05,0.05])
+xlabel('t [s]')
+ylabel('z_y')
+subplot(3,1,3)
+hold on;
+plot(t_out, squeeze(prefit_res(3, 1, :)), 'LineWidth',1)
+ylim([-0.05,0.05])
+xlabel('t [s]')
+ylabel('z_z')
 % 
 % %Magnet
 % figure()
@@ -670,7 +670,7 @@ xlabel('Time [s]')
 ylabel('Control Torque [Nm]')
 legend('x', 'y', 'z')
 title('Control Torque Vector')
-%% Non linear approach control errors
+%%  linear approach control errors
 
 %Target Vs Actual
 euler_target = DCMseries2eulerseries(DCM_target_act);
