@@ -28,11 +28,11 @@ EKF_P0(4:7, 4:7) = 0.01.* 10* EKF_P0(4:7, 4:7); %angle variance on sun * 10
 %Initial conditions
 [state_ECI_init, T_orbit, n] = OrbitPropagation();
 omega_init = [0; 0; 0.05];
-DCM_initial = targetDCM([26321453.5527815,	-132781955.130633,	-57571626.5531097]', R_princ); %rinitial state sun
+DCM_initial = targetDCM([1.1*26321453.5527815,	-132781955.130633,	-57571626.5531097]', R_princ); %rinitial state sun
 % DCM_initial =  [ 0.3419    0.6468   -0.6817;
 %    -0.9159    0.0670   -0.3958;
 %    -0.2104    0.7597    0.6153];
-
+% 
 
 % Actuator Settings
 I_w = 0.0075;
@@ -693,6 +693,7 @@ ylabel('\theta [deg]')
 grid on;
 subplot(3,1,3)
 hold on;
+grid on;
 plot(t_out, rad2deg(euler_target(:, 3)), 'red')
 plot(t_out, rad2deg(euler_out(:, 3)), 'blue','Linestyle', '--')
 xlabel('t [s]')
@@ -704,17 +705,20 @@ euler_error = DCMseries2eulerseries(DCM_error_act);
 figure()
 subplot(3,1,1)
 hold on;
+grid on;
 plot(t_out, rad2deg(euler_error(:, 1)), 'blue')
 xlabel('t [s]')
 ylabel('\Delta\phi [deg]')
 title('Attitude Control Errors - Euler angles over time (213 sequence)')
 subplot(3,1,2)
 hold on;
+grid on;
 plot(t_out, rad2deg(euler_error(:, 2)), 'blue')
 xlabel('t [s]')
 ylabel('\Delta\theta [deg]')
 subplot(3,1,3)
 hold on;
+grid on;
 plot(t_out, rad2deg(euler_error(:, 3)), 'blue')
 xlabel('t [s]')
 ylabel('\Delta\psi [deg]')
