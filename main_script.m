@@ -723,7 +723,61 @@ plot(t_out, rad2deg(euler_error(:, 3)), 'blue')
 xlabel('t [s]')
 ylabel('\Delta\psi [deg]')
 
-% Control Actions
+%% Angular velocity
+%Target Vs Actual
+
+
+figure()
+subplot(3,1,1)
+hold on;
+plot(t_out, zeros(1, length(t_out)), 'red')
+plot(t_out, omega_out(:, 1), 'blue','Linestyle', '--')
+xlabel('t [s]')
+ylabel('\omega_x [rad/s]')
+grid on;
+title('Target Vs True - Angular Velocities')
+subplot(3,1,2)
+hold on;
+plot(t_out, zeros(1, length(t_out)), 'red')
+plot(t_out, omega_out(:, 2), 'blue','Linestyle', '--')
+xlabel('t [s]')
+ylabel('\omega_y [rad/s]')
+grid on;
+subplot(3,1,3)
+hold on;
+grid on;
+plot(t_out, zeros(1, length(t_out)), 'red')
+plot(t_out, omega_out(:, 3), 'blue','Linestyle', '--')
+xlabel('t [s]')
+ylabel('\omega_z [rad/s]')
+legend('Target \omega', 'Actual \omega')
+
+%Control Errors
+euler_error = DCMseries2eulerseries(DCM_error_act);
+figure()
+subplot(3,1,1)
+hold on;
+grid on;
+plot(t_out,  omega_out(:, 1), 'blue')
+xlabel('t [s]')
+ylabel('\Delta\omega_x [rad/s]')
+title('Angular Velocity Control Errors')
+subplot(3,1,2)
+hold on;
+grid on;
+plot(t_out, omega_out(:, 2), 'blue')
+xlabel('t [s]')
+ylabel('\Delta\omega_y [rad/s]')
+subplot(3,1,3)
+hold on;
+grid on;
+plot(t_out,  omega_out(:, 3), 'blue')
+xlabel('t [s]')
+ylabel('\Delta\omega_z [rad/s]')
+
+
+
+
 
 
 
