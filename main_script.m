@@ -28,10 +28,10 @@ EKF_P0(4:7, 4:7) = 0.01.* 10* EKF_P0(4:7, 4:7); %angle variance on sun * 10
 %Initial conditions
 [state_ECI_init, T_orbit, n] = OrbitPropagation();
 omega_init = [0; 0; 0.05];
-%DCM_initial = targetDCM([26321453.5527815,	-132781955.130633,	-57571626.5531097]', R_princ); %rinitial state sun
-DCM_initial =  [ 0.3419    0.6468   -0.6817;
-   -0.9159    0.0670   -0.3958;
-   -0.2104    0.7597    0.6153];
+DCM_initial = targetDCM([26321453.5527815,	-132781955.130633,	-57571626.5531097]', R_princ); %rinitial state sun
+% DCM_initial =  [ 0.3419    0.6468   -0.6817;
+%    -0.9159    0.0670   -0.3958;
+%    -0.2104    0.7597    0.6153];
 
 
 % Actuator Settings
@@ -682,6 +682,7 @@ plot(t_out, rad2deg(euler_target(:, 1)), 'red')
 plot(t_out, rad2deg(euler_out(:, 1)), 'blue','Linestyle', '--')
 xlabel('t [s]')
 ylabel('\phi [deg]')
+grid on;
 title('Target Vs True - Euler angles over time (213 sequence)')
 subplot(3,1,2)
 hold on;
@@ -689,6 +690,7 @@ plot(t_out, rad2deg(euler_target(:, 2)), 'red')
 plot(t_out, rad2deg(euler_out(:, 2)), 'blue','Linestyle', '--')
 xlabel('t [s]')
 ylabel('\theta [deg]')
+grid on;
 subplot(3,1,3)
 hold on;
 plot(t_out, rad2deg(euler_target(:, 3)), 'red')
