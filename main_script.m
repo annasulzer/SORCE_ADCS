@@ -95,6 +95,7 @@ prefit_res = out.prefit_res.Data;
 postfit_res = out.postfit_res.Data;
 
 eclipse_condition = out.eclipse.Data();
+ind_eclipse = find(eclipse_condition == 1);
 
 % Actuators
 M_C_out = out.M_C.Data;
@@ -680,6 +681,7 @@ subplot(3,1,1)
 hold on;
 plot(t_out, rad2deg(euler_target(:, 1)), 'red')
 plot(t_out, rad2deg(euler_out(:, 1)), 'blue','Linestyle', '--')
+xregion(t_out(ind_eclipse(end)),t_out(ind_eclipse(1)));
 xlabel('t [s]')
 ylabel('\phi [deg]')
 grid on;
@@ -688,6 +690,7 @@ subplot(3,1,2)
 hold on;
 plot(t_out, rad2deg(euler_target(:, 2)), 'red')
 plot(t_out, rad2deg(euler_out(:, 2)), 'blue','Linestyle', '--')
+xregion(t_out(ind_eclipse(end)),t_out(ind_eclipse(1)));
 xlabel('t [s]')
 ylabel('\theta [deg]')
 grid on;
@@ -696,9 +699,10 @@ hold on;
 grid on;
 plot(t_out, rad2deg(euler_target(:, 3)), 'red')
 plot(t_out, rad2deg(euler_out(:, 3)), 'blue','Linestyle', '--')
+xregion(t_out(ind_eclipse(end)),t_out(ind_eclipse(1)));
 xlabel('t [s]')
 ylabel('\psi [deg]')
-legend('Target Angle', 'Actual Angle')
+legend('Target Angle', 'Actual Angle', 'Eclipse')
 
 %Control Errors
 euler_error = DCMseries2eulerseries(DCM_error_act);
@@ -707,6 +711,7 @@ subplot(3,1,1)
 hold on;
 grid on;
 plot(t_out, rad2deg(euler_error(:, 1)), 'blue')
+xregion(t_out(ind_eclipse(end)),t_out(ind_eclipse(1)));
 xlabel('t [s]')
 ylabel('\Delta\phi [deg]')
 title('Attitude Control Errors - Euler angles over time (213 sequence)')
@@ -714,19 +719,20 @@ subplot(3,1,2)
 hold on;
 grid on;
 plot(t_out, rad2deg(euler_error(:, 2)), 'blue')
+xregion(t_out(ind_eclipse(end)),t_out(ind_eclipse(1)));
 xlabel('t [s]')
 ylabel('\Delta\theta [deg]')
 subplot(3,1,3)
 hold on;
 grid on;
 plot(t_out, rad2deg(euler_error(:, 3)), 'blue')
+xregion(t_out(ind_eclipse(end)),t_out(ind_eclipse(1)));
 xlabel('t [s]')
 ylabel('\Delta\psi [deg]')
+legend('Angle Error', 'Eclipse')
 
 %% Angular velocity
 %Target Vs Actual
-
-
 figure()
 subplot(3,1,1)
 hold on;
