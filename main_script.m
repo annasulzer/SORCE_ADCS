@@ -728,13 +728,6 @@ ylim([-0.05, 0.05])
 legend('x', 'y', 'z', 'Saturation Limit')
 title('Wheel Torque Vector')
 
-figure()
-hold on;
-plot(vecnorm(squeeze(Mc_wheel)), vecnorm(squeeze(omega_w_dot_out)), LineWidth=2)
-xlabel('Input Control Torque [Nm]')
-ylabel('Output Angular Acceleration [rad/s^2]')
-title('Wheel Angular Acceleration Output Versus Control Torque Input')
-
 %%  linear approach control errors
 
 %Target Vs Actual
