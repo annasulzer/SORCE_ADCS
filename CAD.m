@@ -82,7 +82,7 @@ for k = 1:1:length(t)
 end
 
 %% Full Orbit Visualization
-% Run EulerEquations First! 
+% Run main_script First! 
 % Create Figure
 figure; hold on 
 title(sprintf('Orbit Propagation with RTN, Body, and Principal Axes\nTime: %0.2f sec', t_out(1)), 'Interpreter','latex','FontSize',16);

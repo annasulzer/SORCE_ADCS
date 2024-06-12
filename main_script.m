@@ -28,23 +28,26 @@ EKF_P0(4:7, 4:7) = 0.01.* 10* EKF_P0(4:7, 4:7); %angle variance on sun * 10
 %Initial conditions
 [state_ECI_init, T_orbit, n] = OrbitPropagation();
 omega_init = [0; 0; 0.05];
-%DCM_initial = targetDCM([26321453.5527815,	-132781955.130633,	-57571626.5531097]', R_princ); %rinitial state sun
-DCM_initial =  [ 0.3419    0.6468   -0.6817;
-   -0.9159    0.0670   -0.3958;
-   -0.2104    0.7597    0.6153];
-
+DCM_initial = targetDCM([1.1*26321453.5527815,	-132781955.130633,	-57571626.5531097]', R_princ); %rinitial state sun
+% DCM_initial =  [ 0.3419    0.6468   -0.6817;
+%    -0.9159    0.0670   -0.3958;
+%    -0.2104    0.7597    0.6153];
+% 
 
 % Actuator Settings
 I_w = 0.0075;
-omega_w_init = [0;0;0;0];
-A = R_princ*[1,0,0,1/sqrt(3);
+omega_w_init = [1e-3;1e-3;1e-3;1e-3];
+A = R_princ'*[1,0,0,1/sqrt(3);
      0,1,0,1/sqrt(3);
      0,0,1,1/sqrt(3);];
-A_star = R_princ*[5/6,-1/6,-1/6;
+A_star = R_princ'*[5/6,-1/6,-1/6;
           -1/6,5/6,-1/6;
           -1/6,-1/6,5/6;
           sqrt(3)/2,sqrt(3)/2,sqrt(3)/2]';
 A_star = A_star';
+max_wheel_torque = 0.04;%Nm saturation
+max_wheel_om = 267; %rad/s saturation
+max_dipole = 400; %Am^2 saturation
 
 %Integration settings
 eps = 1e-10;
@@ -95,17 +98,24 @@ prefit_res = out.prefit_res.Data;
 postfit_res = out.postfit_res.Data;
 
 eclipse_condition = out.eclipse.Data();
+ind_eclipse = find(eclipse_condition == 1);
 
 % Actuators
 M_C_out = out.M_C.Data;
 omega_w_out = out.omega_w.Data;
-
+omega_w_dot_out = out.omega_w_dot.Data;
+Mc_mag = out.Mc_magnet.Data;
+Mc_act = out.Mc_act.Data;
+Mc_wheel = out.Mc_wheel.Data;
+m_mag = out.m_magnet.Data(:,:)';
 
 % Control
 DCM_target_act = out.DCM_target_act.Data();
 DCM_error_act = out.DCM_error_act.Data();
 
 
+%%
+[R, T, N] = RTN_frame_inertial(state_out);
 %% PSET8 Plotting
 %% Residuals Prefit
 % %Stats
@@ -655,22 +665,70 @@ DCM_error_act = out.DCM_error_act.Data();
 % title('Control Torque Vector')
 %% PSET 9 Plotting
 % %% Actuators 
+
+figure()
+subplot(2,1,1)
+plot(t_out, squeeze(M_C_out), LineWidth=2)
+hold on;
+xlabel('Time [s]')
+ylabel('Control Torque [Nm]')
+ylim([-0.1, 0.1])
+legend('x', 'y', 'z', 'Saturation Limits')
+title('Control Torque Vector (from Controller)')
+subplot(2,1,2)
+hold on;
+plot(t_out, squeeze(Mc_act), LineWidth=2)
+xlabel('Time [s]')
+ylabel('Control Torque [Nm]')
+ylim([-0.1, 0.1])
+legend('x', 'y', 'z')
+title('Control Torque Vector (realized by Actuator)')
+%% Magnetorquer
 figure()
 hold on;
-plot(t_out, squeeze(omega_w_out), LineWidth=2)
+plot(t_out, squeeze(Mc_mag), LineWidth=2)
 xlabel('Time [s]')
-ylabel('MW Angular Velocities [rad/s]')
-legend('1', '2', '3', '4')
-title('Angular velocity of MW')
+ylabel('Manetic Torque [Nm]')
+
+legend('x', 'y', 'z')
+title('Magnetic Torque Vector')
 
 figure()
 hold on;
-plot(t_out, squeeze(M_C_out), LineWidth=2)
+plot(t_out, squeeze(m_mag), LineWidth=2)
+yline(-max_dipole, 'black', 'LineStyle','--')
+yline(max_dipole, 'black', 'LineStyle','--')
+ylim([-410, 410])
 xlabel('Time [s]')
-ylabel('Control Torque [Nm]')
-legend('x', 'y', 'z')
-title('Control Torque Vector')
-%% Non linear approach control errors
+ylabel('Manetic Dipole [Am^2]')
+legend('x', 'y', 'z', 'Saturation Limit')
+title('Magnetic Dipole')
+%% Wheel
+
+figure()
+hold on;
+plot(t_out, squeeze(omega_w_out), LineWidth=2)
+yline(-max_wheel_om, 'black', 'LineStyle','--')
+yline(max_wheel_om, 'black', 'LineStyle','--')
+ylim([-300, 300])
+xlabel('Time [s]')
+ylabel('MW Angular Velocities [rad/s]')
+legend('1', '2', '3', '4', 'Saturation Limits')
+title('Angular velocity of MW')
+
+
+figure()
+hold on;
+plot(t_out, squeeze(Mc_wheel), LineWidth=2)
+yline(-max_wheel_torque, 'black', 'LineStyle','--')
+yline(max_wheel_torque, 'black', 'LineStyle','--')
+xlabel('Time [s]')
+ylabel('Wheel Torque [Nm]')
+ylim([-0.05, 0.05])
+legend('x', 'y', 'z', 'Saturation Limit')
+title('Wheel Torque Vector')
+
+%%  linear approach control errors
 
 %Target Vs Actual
 euler_target = DCMseries2eulerseries(DCM_target_act);
@@ -680,44 +738,116 @@ subplot(3,1,1)
 hold on;
 plot(t_out, rad2deg(euler_target(:, 1)), 'red')
 plot(t_out, rad2deg(euler_out(:, 1)), 'blue','Linestyle', '--')
+xregion(t_out(ind_eclipse(end)),t_out(ind_eclipse(1)));
 xlabel('t [s]')
 ylabel('\phi [deg]')
+grid on;
 title('Target Vs True - Euler angles over time (213 sequence)')
 subplot(3,1,2)
 hold on;
 plot(t_out, rad2deg(euler_target(:, 2)), 'red')
 plot(t_out, rad2deg(euler_out(:, 2)), 'blue','Linestyle', '--')
+xregion(t_out(ind_eclipse(end)),t_out(ind_eclipse(1)));
 xlabel('t [s]')
 ylabel('\theta [deg]')
+grid on;
 subplot(3,1,3)
 hold on;
+grid on;
 plot(t_out, rad2deg(euler_target(:, 3)), 'red')
 plot(t_out, rad2deg(euler_out(:, 3)), 'blue','Linestyle', '--')
+xregion(t_out(ind_eclipse(end)),t_out(ind_eclipse(1)));
 xlabel('t [s]')
 ylabel('\psi [deg]')
-legend('Target Angle', 'Actual Angle')
+legend('Target Angle', 'Actual Angle', 'Eclipse')
 
 %Control Errors
 euler_error = DCMseries2eulerseries(DCM_error_act);
 figure()
 subplot(3,1,1)
 hold on;
+grid on;
 plot(t_out, rad2deg(euler_error(:, 1)), 'blue')
+xregion(t_out(ind_eclipse(end)),t_out(ind_eclipse(1)));
 xlabel('t [s]')
 ylabel('\Delta\phi [deg]')
 title('Attitude Control Errors - Euler angles over time (213 sequence)')
 subplot(3,1,2)
 hold on;
+grid on;
 plot(t_out, rad2deg(euler_error(:, 2)), 'blue')
+xregion(t_out(ind_eclipse(end)),t_out(ind_eclipse(1)));
 xlabel('t [s]')
 ylabel('\Delta\theta [deg]')
 subplot(3,1,3)
 hold on;
+grid on;
 plot(t_out, rad2deg(euler_error(:, 3)), 'blue')
+xregion(t_out(ind_eclipse(end)),t_out(ind_eclipse(1)));
 xlabel('t [s]')
 ylabel('\Delta\psi [deg]')
+legend('Angle Error', 'Eclipse')
 
-% Control Actions
+%% Angular velocity
+%Target Vs Actual
+figure()
+subplot(3,1,1)
+hold on;
+plot(t_out, zeros(1, length(t_out)), 'red')
+plot(t_out, omega_out(:, 1), 'blue','Linestyle', '--')
+xregion(t_out(ind_eclipse(end)),t_out(ind_eclipse(1)));
+xlabel('t [s]')
+ylabel('\omega_x [rad/s]')
+grid on;
+title('Target Vs True - Angular Velocities')
+subplot(3,1,2)
+hold on;
+plot(t_out, zeros(1, length(t_out)), 'red')
+plot(t_out, omega_out(:, 2), 'blue','Linestyle', '--')
+xregion(t_out(ind_eclipse(end)),t_out(ind_eclipse(1)));
+xlabel('t [s]')
+ylabel('\omega_y [rad/s]')
+grid on;
+subplot(3,1,3)
+hold on;
+grid on;
+plot(t_out, zeros(1, length(t_out)), 'red')
+plot(t_out, omega_out(:, 3), 'blue','Linestyle', '--')
+xregion(t_out(ind_eclipse(end)),t_out(ind_eclipse(1)));
+xlabel('t [s]')
+ylabel('\omega_z [rad/s]')
+legend('Target \omega', 'Actual \omega', 'Eclipse')
+
+%Control Errors
+euler_error = DCMseries2eulerseries(DCM_error_act);
+figure()
+subplot(3,1,1)
+hold on;
+grid on;
+plot(t_out,  omega_out(:, 1), 'blue')
+xregion(t_out(ind_eclipse(end)),t_out(ind_eclipse(1)));
+xlabel('t [s]')
+ylabel('\Delta\omega_x [rad/s]')
+title('Angular Velocity Control Errors')
+subplot(3,1,2)
+hold on;
+grid on;
+plot(t_out, omega_out(:, 2), 'blue')
+xregion(t_out(ind_eclipse(end)),t_out(ind_eclipse(1)));
+xlabel('t [s]')
+ylabel('\Delta\omega_y [rad/s]')
+subplot(3,1,3)
+hold on;
+grid on;
+plot(t_out,  omega_out(:, 3), 'blue')
+xregion(t_out(ind_eclipse(end)),t_out(ind_eclipse(1)));
+xlabel('t [s]')
+ylabel('\Delta\omega_z [rad/s]')
+legend('Angular Velocity Errors', 'Eclipse')
+
+
+
+
 
 
 
