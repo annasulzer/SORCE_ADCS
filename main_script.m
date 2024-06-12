@@ -98,12 +98,17 @@ eclipse_condition = out.eclipse.Data();
 
 % Actuators
 M_C_out = out.M_C.Data;
-omega_w_out = out.omega_w.Data;
+MC_in = out.M_c_in.Data;
+omega_w_out = out.omega_w.Data(:,:)';
+omega_w_dot_out = out.omega_w_dot.Data(:,:)';
+%L_w_dot = out.L_w_dot.Data(:,:)';
 
 
 % Control
 DCM_target_act = out.DCM_target_act.Data();
 DCM_error_act = out.DCM_error_act.Data();
+
+
 
 
 %% PSET8 Plotting
@@ -719,7 +724,46 @@ ylabel('\Delta\psi [deg]')
 
 % Control Actions
 
+%%
+figure()
+plot(t_out(1:100000, :), MC_in(1:100000, :))
+xlabel('t [s]')
+ylabel('Control Torque [Nm]')
+title('Control Torque from controller')
+legend('x', 'y', 'z')
+ylim([-0.3, 0.3])
 
+figure()
+plot(t_out(1:100000, :), M_C_out(1:100000, :))
+xlabel('t [s]')
+ylabel('Control Torque [Nm]')
+title('Control Torque as realized by actuator')
+legend('x', 'y', 'z')
+ylim([-0.3, 0.3])
+
+
+%%
+figure()
+subplot(3,1,1)
+plot(MC_in(1:100000, 1), M_C_out(1:100000, 1))
+xlabel('M_{c,x} [Nm]')
+ylabel('\L dot_x [Nm]')
+title('Input (L dot) to Actuator as function of input torque')
+subplot(3,1,2)
+plot(MC_in(1:100000, 2), M_C_out(1:100000, 2))
+xlabel('M_{c,x} [Nm]')
+ylabel('L dot_y [Nm]')
+subplot(3,1,3)
+
+plot(MC_in(1:100000, 3), M_C_out(1:100000, 3))
+xlabel('M_{c,x} [Nm]')
+ylabel('L dot_z [Nm]')
+xlabel('M_{c,x} [Nm]')
+
+
+%%
+figure()
+plot(t_out,vecnorm(omega_w_out(1:end, :), 2,2) )
 
 %% calculate small angle DCM for 213 sequence
 function DCM = small_angle_DCM(angles)
