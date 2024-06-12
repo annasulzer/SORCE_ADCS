@@ -116,6 +116,7 @@ DCM_error_act = out.DCM_error_act.Data();
 
 %%
 [R, T, N] = RTN_frame_inertial(state_out);
+[Xp, Yp, Zp, Xb, Yb, Zb] = principal_body_frame_inertial(DCM_out, R_princ)
 %% PSET8 Plotting
 %% Residuals Prefit
 % %Stats

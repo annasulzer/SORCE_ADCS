@@ -118,7 +118,7 @@ p = plot3(x_position(1),y_position(1),z_position(1),'k','LineWidth',3);
 m = scatter3(x_position(1),y_position(1),z_position(1),'filled','k');
 
 % Iterating through the length of the time array
-for k = 1:1:length(t_out)
+for k = 1:500:length(t_out)
     % Updating the line
     p.XData = x_position(1:k);
     p.YData = y_position(1:k);
@@ -138,17 +138,20 @@ for k = 1:1:length(t_out)
     quiver3(x_position(k),y_position(k),z_position(k),2000*N(k,1),2000*N(k,2),2000*N(k,3),LineWidth=3,ShowArrowHead='on',Color='#7B3F00')
 
     % Principal
-    quiver3(x_position(k),y_position(k),z_position(k),2000*Xp(k,1),2000*Xp(k,2),2000*Xp(k,3),LineWidth=3,ShowArrowHead='on',Color='magenta')
-    quiver3(x_position(k),y_position(k),z_position(k),2000*Yp(k,1),2000*Yp(k,2),2000*Yp(k,3),LineWidth=3,ShowArrowHead='on',Color='cyan')
-    quiver3(x_position(k),y_position(k),z_position(k),2000*Zp(k,1),2000*Zp(k,2),2000*Zp(k,3),LineWidth=3,ShowArrowHead='on',Color='yellow')
+    % quiver3(x_position(k),y_position(k),z_position(k),2000*Xp(k,1),2000*Xp(k,2),2000*Xp(k,3),LineWidth=3,ShowArrowHead='on',Color='magenta')
+    % quiver3(x_position(k),y_position(k),z_position(k),2000*Yp(k,1),2000*Yp(k,2),2000*Yp(k,3),LineWidth=3,ShowArrowHead='on',Color='cyan')
+    % quiver3(x_position(k),y_position(k),z_position(k),2000*Zp(k,1),2000*Zp(k,2),2000*Zp(k,3),LineWidth=3,ShowArrowHead='on',Color='yellow')
 
     % Body
     quiver3(x_position(k),y_position(k),z_position(k),2000*Xb(k,1),2000*Xb(k,2),2000*Xb(k,3),LineWidth=3,ShowArrowHead='on',Color='blue')
-    quiver3(x_position(k),y_position(k),z_position(k),2000*Yb(k,1),2000*Yb(k,2),2000*Yb(k,3),LineWidth=3,ShowArrowHead='on',Color='red')
+    quiver3(x_position(k),y_position(k),z_position(k),2000*Yb(k,1),2000*Yb(k,2),2000*Yb(k,3),LineWidth=3,ShowArrowHead='on',Color='cyan')
     quiver3(x_position(k),y_position(k),z_position(k),2000*Zb(k,1),2000*Zb(k,2),2000*Zb(k,3),LineWidth=3,ShowArrowHead='on',Color='green')
 
+    % Sun Vector
+    quiver3(x_position(k),y_position(k),z_position(k),state_sun_out(k,1)/4e4,state_sun_out(k,2)/4e4,state_sun_out(k,3)/4e4,LineWidth=3,ShowArrowHead='on',Color='yellow')
+
     % Legend
-    legend('','','Orbit Path','','R','T','N','X_{principal}','Y_{principal}','Z_{principal}','X_{body}','Y_{body}','Z_{body}')
+    legend('','','Orbit Path','','R','T','N','X_{body}','Y_{body}','Z_{body}','r_{sun}')
 
     % Updating the title
     title(sprintf('SORCE Orbit with RTN, Body, and Principal Axes\nTime: %0.2f sec', t_out(k)),...
