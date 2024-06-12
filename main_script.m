@@ -45,6 +45,8 @@ A_star = R_princ*[5/6,-1/6,-1/6;
           -1/6,-1/6,5/6;
           sqrt(3)/2,sqrt(3)/2,sqrt(3)/2]';
 A_star = A_star';
+max_wheel_torque = 0.04;%Nm saturation
+max_wheel_om = 267; %rad/s saturation
 
 %Integration settings
 eps = 1e-10;
@@ -100,13 +102,17 @@ ind_eclipse = find(eclipse_condition == 1);
 % Actuators
 M_C_out = out.M_C.Data;
 omega_w_out = out.omega_w.Data;
-
+Mc_mag = out.Mc_magnet.Data;
+Mc_act = out.Mc_act.Data;
+Mc_wheel = out.Mc_wheel.Data;
 
 % Control
 DCM_target_act = out.DCM_target_act.Data();
 DCM_error_act = out.DCM_error_act.Data();
 
 
+%%
+[R, T, N] = RTN_frame_inertial(state_out);
 %% PSET8 Plotting
 %% Residuals Prefit
 % %Stats
@@ -665,12 +671,39 @@ legend('1', '2', '3', '4')
 title('Angular velocity of MW')
 
 figure()
-hold on;
+subplot(2,1,1)
 plot(t_out, squeeze(M_C_out), LineWidth=2)
+plot(t_out, -max_wheel_torque)
 xlabel('Time [s]')
 ylabel('Control Torque [Nm]')
+ylim([-0.1, 0.1])
 legend('x', 'y', 'z')
-title('Control Torque Vector')
+title('Control Torque Vector (from Controller)')
+subplot(2,1,2)
+hold on;
+plot(t_out, squeeze(Mc_act), LineWidth=2)
+xlabel('Time [s]')
+ylabel('Control Torque [Nm]')
+ylim([-0.1, 0.1])
+legend('x', 'y', 'z')
+title('Control Torque Vector (realized by Actuator)')
+
+figure()
+hold on;
+plot(t_out, squeeze(Mc_mag), LineWidth=2)
+xlabel('Time [s]')
+ylabel('Manetic Torque [Nm]')
+legend('x', 'y', 'z')
+title('Magnetic Torque Vector')
+
+figure()
+hold on;
+plot(t_out, squeeze(Mc_wheel), LineWidth=2)
+xlabel('Time [s]')
+ylabel('Wheel Torque [Nm]')
+legend('x', 'y', 'z')
+title('Wheel Torque Vector')
+
 %%  linear approach control errors
 
 %Target Vs Actual
