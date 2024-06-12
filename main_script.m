@@ -57,7 +57,7 @@ tstart = 0; tend = T_orbit;
 
 
 %% Simulate
-out = sim("mainEthan");
+out = sim("main");
 %% Read out simulation data
 %attitude propagation
 t_out = out.tout;
@@ -116,7 +116,9 @@ DCM_error_act = out.DCM_error_act.Data();
 
 %%
 [R, T, N] = RTN_frame_inertial(state_out);
-[Xp, Yp, Zp, Xb, Yb, Zb] = principal_body_frame_inertial(DCM_out, R_princ)
+[Xp, Yp, Zp, Xb, Yb, Zb] = principal_body_frame_inertial(DCM_out, R_princ);
+
+
 %% PSET8 Plotting
 %% Residuals Prefit
 % %Stats

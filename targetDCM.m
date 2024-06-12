@@ -11,7 +11,7 @@ function target_DCM = targetDCM(r_sun, R_princ)
     
     %construct target DCM in principal frame
     target_DCM = eye(3); %target DCM in principal frame
-    target_DCM(1:3, 1) =  R_princ * target_x_body; %target attitude x-component principal frame
-    target_DCM(1:3, 2) =  R_princ * target_y_body; %target attitude y-component principal frame
-    target_DCM(1:3, 3) =  R_princ * r_sun_norm; %target attitude z-component principal frame
+    target_DCM(1:3, 1) = target_x_body; %target attitude x-component principal frame
+    target_DCM(1:3, 2) = target_y_body; %target attitude y-component principal frame
+    target_DCM(1:3, 3) = r_sun_norm; %target attitude z-component principal frame
 end
