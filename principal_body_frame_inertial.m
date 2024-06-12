@@ -16,8 +16,8 @@ function [Xp, Yp, Zp, Xb, Yb, Zb] = principal_body_frame_inertial(Rot, R_princ)
         Xp(i, :) = R'*[1,0,0]';
         Yp(i, :) = R'*[0,1,0]';
         Zp(i, :) = R'*[0,0,1]';
-        Xb(i, :) = R'* R_princ' * [1, 0, 0]';
-        Yb(i, :) = R'* R_princ' * [0, 1, 0]';
-        Zb(i, :) = R'* R_princ' * [0, 0, 1]';
+        Xb(i, :) = R' * R_princ'* [1, 0, 0]';
+        Yb(i, :) = R'* R_princ'* [0, 1, 0]';
+        Zb(i, :) = R'* R_princ'* [0, 0, 1]';
     end
 end
