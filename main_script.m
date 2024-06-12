@@ -103,6 +103,7 @@ ind_eclipse = find(eclipse_condition == 1);
 % Actuators
 M_C_out = out.M_C.Data;
 omega_w_out = out.omega_w.Data;
+omega_w_dot_out = out.omega_w_dot.Data;
 Mc_mag = out.Mc_magnet.Data;
 Mc_act = out.Mc_act.Data;
 Mc_wheel = out.Mc_wheel.Data;
@@ -726,6 +727,13 @@ ylabel('Wheel Torque [Nm]')
 ylim([-0.05, 0.05])
 legend('x', 'y', 'z', 'Saturation Limit')
 title('Wheel Torque Vector')
+
+figure()
+hold on;
+plot(vecnorm(squeeze(Mc_wheel)), vecnorm(squeeze(omega_w_dot_out)), LineWidth=2)
+xlabel('Input Control Torque [Nm]')
+ylabel('Output Angular Acceleration [rad/s^2]')
+title('Wheel Angular Acceleration Output Versus Control Torque Input')
 
 %%  linear approach control errors
 
