@@ -47,6 +47,7 @@ A_star = R_princ'*[5/6,-1/6,-1/6;
 A_star = A_star';
 max_wheel_torque = 0.04;%Nm saturation
 max_wheel_om = 267; %rad/s saturation
+max_dipole = 400; %Am^2 saturation
 
 %Integration settings
 eps = 1e-10;
@@ -105,6 +106,7 @@ omega_w_out = out.omega_w.Data;
 Mc_mag = out.Mc_magnet.Data;
 Mc_act = out.Mc_act.Data;
 Mc_wheel = out.Mc_wheel.Data;
+m_mag = out.m_magnet.Data(:,:)';
 
 % Control
 DCM_target_act = out.DCM_target_act.Data();
@@ -680,15 +682,27 @@ ylabel('Control Torque [Nm]')
 ylim([-0.1, 0.1])
 legend('x', 'y', 'z')
 title('Control Torque Vector (realized by Actuator)')
-%%
+%% Magnetorquer
 figure()
 hold on;
 plot(t_out, squeeze(Mc_mag), LineWidth=2)
 xlabel('Time [s]')
 ylabel('Manetic Torque [Nm]')
+
 legend('x', 'y', 'z')
 title('Magnetic Torque Vector')
 
+figure()
+hold on;
+plot(t_out, squeeze(m_mag), LineWidth=2)
+yline(-max_dipole, 'black', 'LineStyle','--')
+yline(max_dipole, 'black', 'LineStyle','--')
+ylim([-410, 410])
+xlabel('Time [s]')
+ylabel('Manetic Dipole [Am^2]')
+legend('x', 'y', 'z', 'Saturation Limit')
+title('Magnetic Dipole')
+%% Wheel
 
 figure()
 hold on;
@@ -780,6 +794,7 @@ subplot(3,1,1)
 hold on;
 plot(t_out, zeros(1, length(t_out)), 'red')
 plot(t_out, omega_out(:, 1), 'blue','Linestyle', '--')
+xregion(t_out(ind_eclipse(end)),t_out(ind_eclipse(1)));
 xlabel('t [s]')
 ylabel('\omega_x [rad/s]')
 grid on;
@@ -788,6 +803,7 @@ subplot(3,1,2)
 hold on;
 plot(t_out, zeros(1, length(t_out)), 'red')
 plot(t_out, omega_out(:, 2), 'blue','Linestyle', '--')
+xregion(t_out(ind_eclipse(end)),t_out(ind_eclipse(1)));
 xlabel('t [s]')
 ylabel('\omega_y [rad/s]')
 grid on;
@@ -796,9 +812,10 @@ hold on;
 grid on;
 plot(t_out, zeros(1, length(t_out)), 'red')
 plot(t_out, omega_out(:, 3), 'blue','Linestyle', '--')
+xregion(t_out(ind_eclipse(end)),t_out(ind_eclipse(1)));
 xlabel('t [s]')
 ylabel('\omega_z [rad/s]')
-legend('Target \omega', 'Actual \omega')
+legend('Target \omega', 'Actual \omega', 'Eclipse')
 
 %Control Errors
 euler_error = DCMseries2eulerseries(DCM_error_act);
@@ -807,6 +824,7 @@ subplot(3,1,1)
 hold on;
 grid on;
 plot(t_out,  omega_out(:, 1), 'blue')
+xregion(t_out(ind_eclipse(end)),t_out(ind_eclipse(1)));
 xlabel('t [s]')
 ylabel('\Delta\omega_x [rad/s]')
 title('Angular Velocity Control Errors')
@@ -814,14 +832,17 @@ subplot(3,1,2)
 hold on;
 grid on;
 plot(t_out, omega_out(:, 2), 'blue')
+xregion(t_out(ind_eclipse(end)),t_out(ind_eclipse(1)));
 xlabel('t [s]')
 ylabel('\Delta\omega_y [rad/s]')
 subplot(3,1,3)
 hold on;
 grid on;
 plot(t_out,  omega_out(:, 3), 'blue')
+xregion(t_out(ind_eclipse(end)),t_out(ind_eclipse(1)));
 xlabel('t [s]')
 ylabel('\Delta\omega_z [rad/s]')
+legend('Angular Velocity Errors', 'Eclipse')
 
 
 
