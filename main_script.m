@@ -36,11 +36,11 @@ DCM_initial = targetDCM([1.1*26321453.5527815,	-132781955.130633,	-57571626.5531
 
 % Actuator Settings
 I_w = 0.0075;
-omega_w_init = [0;0;0;0];
-A = R_princ*[1,0,0,1/sqrt(3);
+omega_w_init = [1e-3;1e-3;1e-3;1e-3];
+A = R_princ'*[1,0,0,1/sqrt(3);
      0,1,0,1/sqrt(3);
      0,0,1,1/sqrt(3);];
-A_star = R_princ*[5/6,-1/6,-1/6;
+A_star = R_princ'*[5/6,-1/6,-1/6;
           -1/6,5/6,-1/6;
           -1/6,-1/6,5/6;
           sqrt(3)/2,sqrt(3)/2,sqrt(3)/2]';
@@ -662,22 +662,15 @@ DCM_error_act = out.DCM_error_act.Data();
 % title('Control Torque Vector')
 %% PSET 9 Plotting
 % %% Actuators 
-figure()
-hold on;
-plot(t_out, squeeze(omega_w_out), LineWidth=2)
-xlabel('Time [s]')
-ylabel('MW Angular Velocities [rad/s]')
-legend('1', '2', '3', '4')
-title('Angular velocity of MW')
 
 figure()
 subplot(2,1,1)
 plot(t_out, squeeze(M_C_out), LineWidth=2)
-plot(t_out, -max_wheel_torque)
+hold on;
 xlabel('Time [s]')
 ylabel('Control Torque [Nm]')
 ylim([-0.1, 0.1])
-legend('x', 'y', 'z')
+legend('x', 'y', 'z', 'Saturation Limits')
 title('Control Torque Vector (from Controller)')
 subplot(2,1,2)
 hold on;
@@ -687,7 +680,7 @@ ylabel('Control Torque [Nm]')
 ylim([-0.1, 0.1])
 legend('x', 'y', 'z')
 title('Control Torque Vector (realized by Actuator)')
-
+%%
 figure()
 hold on;
 plot(t_out, squeeze(Mc_mag), LineWidth=2)
@@ -696,12 +689,28 @@ ylabel('Manetic Torque [Nm]')
 legend('x', 'y', 'z')
 title('Magnetic Torque Vector')
 
+
+figure()
+hold on;
+plot(t_out, squeeze(omega_w_out), LineWidth=2)
+yline(-max_wheel_om, 'black', 'LineStyle','--')
+yline(max_wheel_om, 'black', 'LineStyle','--')
+ylim([-300, 300])
+xlabel('Time [s]')
+ylabel('MW Angular Velocities [rad/s]')
+legend('1', '2', '3', '4', 'Saturation Limits')
+title('Angular velocity of MW')
+
+
 figure()
 hold on;
 plot(t_out, squeeze(Mc_wheel), LineWidth=2)
+yline(-max_wheel_torque, 'black', 'LineStyle','--')
+yline(max_wheel_torque, 'black', 'LineStyle','--')
 xlabel('Time [s]')
 ylabel('Wheel Torque [Nm]')
-legend('x', 'y', 'z')
+ylim([-0.05, 0.05])
+legend('x', 'y', 'z', 'Saturation Limit')
 title('Wheel Torque Vector')
 
 %%  linear approach control errors
